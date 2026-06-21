@@ -1,6 +1,6 @@
 // ==================== CONFIGURAÇÃO GLOBAL ====================
 
-const VERSION = "v0.8";
+const VERSION = "v0.9";
 
 const CONFIG = {
   MAX_THREADS: 15,

@@ -101,7 +101,7 @@ function _chamarProvider(provider, key, prompt) {
 }
 
 function _chamarGemini(key, prompt) {
-  const url     = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+  const url     = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + key;
   const payload = {
     contents: [{ parts: [{ text: prompt }] }],
     generationConfig: { responseMimeType: "application/json" }
