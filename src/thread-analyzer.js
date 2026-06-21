@@ -14,6 +14,13 @@ function processarNewsletter(thread, message, subject, body) {
   return LABELS.NEWSLETTER;
 }
 
+function processarAvisoDiscoVirtual(thread, message, subject, body) {
+  message.forward(CONTATOS.VITOR);
+  aplicarLabel(thread, LABELS.DISCO_VIRTUAL);
+  thread.markRead();
+  return "encaminhado para " + CONTATOS.VITOR + " | " + LABELS.DISCO_VIRTUAL;
+}
+
 // ---------------------------------------------------------------------------
 // Diagnóstico — lê threads sem modificar nada
 // ---------------------------------------------------------------------------

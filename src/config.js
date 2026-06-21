@@ -9,8 +9,13 @@ const CONFIG = {
 
 // Labels usadas no projeto — altere aqui para refletir seus labels reais do Gmail
 const LABELS = {
-  DAYCOVAL_SEGUROS: "[-daycoval-]-daycoval-seguros",
-  NEWSLETTER:       "[-newsletter-]"
+  DAYCOVAL_SEGUROS:  "[-daycoval-]-daycoval-seguros",
+  NEWSLETTER:        "[-newsletter-]",
+  DISCO_VIRTUAL:     "[-infra-]-disco-virtual"
+};
+
+const CONTATOS = {
+  VITOR: "vitor@colbizsv.com"
 };
 
 // Em produção, configure via: Arquivo > Propriedades do projeto > Propriedades do script

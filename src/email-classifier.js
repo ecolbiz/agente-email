@@ -23,6 +23,15 @@ const RULES = [
              subject.includes("unsubscribe");
     },
     action: processarNewsletter
+  },
+  {
+    name: "Aviso de Disco Virtual",
+    condition: function(thread, message) {
+      const subject = message.getSubject().toLowerCase();
+      return subject.includes("aviso de espaço em disco virtual") ||
+             subject.includes("aviso de espaco em disco virtual");
+    },
+    action: processarAvisoDiscoVirtual
   }
   // Adicione novas regras aqui
 ];
