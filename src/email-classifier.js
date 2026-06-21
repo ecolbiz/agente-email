@@ -41,8 +41,16 @@ const RULES = [
 // ---------------------------------------------------------------------------
 
 function chamarIAComFallback(subject, body) {
-  const API_KEYS = getApiKeys();
-  const prompt   = buildCategorizationPrompt(subject, body);
+  var API_KEYS = {};
+  try { API_KEYS = getApiKeys(); } catch(e) { /* PropertiesService indisponível */ }
+
+  var temChave = CONFIG.PROVIDERS_ORDER.some(function(p) { return !!API_KEYS[p]; });
+  if (!temChave) {
+    Logger_.warn("IA ignorada (sem chaves): " + subject);
+    return null;
+  }
+
+  const prompt = buildCategorizationPrompt(subject, body);
 
   for (const provider of CONFIG.PROVIDERS_ORDER) {
     const key = API_KEYS[provider];

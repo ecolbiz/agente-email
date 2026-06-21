@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Agente de Emails <?= VERSION ?></title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:28px 16px}
+    .card{background:#fff;border-radius:12px;padding:28px;width:100%;max-width:680px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+    .top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px}
+    h1{font-size:20px;color:#1a1a2e}
+    .version{font-size:11px;background:#f1f5f9;color:#64748b;padding:2px 8px;border-radius:20px;font-weight:700}
+
+    /* Tabs */
+    .tabs{display:flex;gap:4px;border-bottom:2px solid #e2e8f0;margin-bottom:20px}
+    .tab{background:none;border:none;padding:8px 16px;font-size:13px;font-weight:600;color:#94a3b8;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;border-radius:0}
+    .tab.active{color:#4f46e5;border-bottom-color:#4f46e5}
+    .tab:hover{color:#4f46e5;opacity:1}
+
+    /* Exec tab */
+    .section-title{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+    .rules-box{border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;margin-bottom:16px;min-height:44px}
+    .rule-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f8fafc}
+    .rule-item:last-child{border:none}
+    .rule-item label{font-size:13px;color:#334155;cursor:pointer;flex:1}
+    .rule-item input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:#4f46e5}
+
+    /* Buttons */
+    .btn-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+    button{padding:9px 16px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
+    button:hover:not(:disabled){opacity:.85}
+    button:disabled{opacity:.4;cursor:not-allowed}
+    .btn-run{background:#4f46e5;color:#fff}
+    .btn-ghost{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+    .btn-save{background:#059669;color:#fff}
+
+    #status{font-size:13px;color:#6b7280;margin-bottom:10px;min-height:20px}
+    #log-box{background:#0f172a;border-radius:8px;padding:14px;min-height:120px;max-height:360px;overflow-y:auto}
+    .log-empty{color:#475569;font-size:13px;font-style:italic}
+    .log-item{font-size:13px;color:#e2e8f0;padding:4px 0;border-bottom:1px solid #1e293b;line-height:1.5}
+    .log-item:last-child{border:none}
+    .api-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .api-badge{font-size:12px;padding:3px 10px;border-radius:20px;font-weight:600}
+    .api-ok{background:#dcfce7;color:#166534}
+    .api-err{background:#fee2e2;color:#991b1b}
+    .diag-thread{background:#1e293b;border-radius:6px;padding:10px 12px;margin-bottom:8px}
+    .diag-from{color:#94a3b8;font-size:11px;margin-bottom:2px}
+    .diag-subject{color:#e2e8f0;font-size:13px;font-weight:600;margin-bottom:4px}
+    .tag{font-size:11px;padding:2px 8px;border-radius:20px;display:inline-block}
+    .tag-match{background:#166534;color:#bbf7d0}
+    .tag-ai{background:#1e3a5f;color:#93c5fd}
+    .diag-labels{color:#64748b;font-size:11px;margin-top:4px}
+
+    /* Config tab */
+    .rule-config-block{border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:14px}
+    .rule-config-title{font-size:14px;font-weight:700;color:#1e293b;margin-bottom:12px}
+    .config-row{display:flex;gap:16px;align-items:flex-start}
+    .config-col{flex:1}
+    .config-col-label{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px}
+    .label-search{width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;margin-bottom:6px}
+    .label-list{max-height:160px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:6px;padding:4px}
+    .label-check-item{display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:4px;cursor:pointer}
+    .label-check-item:hover{background:#f8fafc}
+    .label-check-item.hidden{display:none}
+    .label-check-item input{accent-color:#4f46e5;cursor:pointer}
+    .label-check-item span{font-size:12px;color:#334155}
+    .archive-toggle{display:flex;align-items:center;gap:8px;padding:10px 0 0}
+    .archive-toggle input{width:16px;height:16px;accent-color:#4f46e5;cursor:pointer}
+    .archive-toggle label{font-size:13px;color:#374151;cursor:pointer}
+    #config-status{font-size:13px;margin-top:12px;min-height:20px}
+
+    .spinner{display:inline-block;width:13px;height:13px;border:2px solid #6b7280;border-top-color:#4f46e5;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="top">
+    <h1>📬 Agente de Emails</h1>
+    <span class="version"><?= VERSION ?></span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('exec')">Execução</button>
+    <button class="tab" id="tab-config-btn" onclick="showTab('config')">⚙️ Configurações</button>
+  </div>
+
+  <!-- ===== ABA EXECUÇÃO ===== -->
+  <div id="tab-exec">
+    <div class="section-title">Regras disponíveis</div>
+    <div class="rules-box" id="rules-box"><div class="log-empty">Carregando...</div></div>
+    <div class="btn-row">
+      <button class="btn-run" onclick="rodar()">▶️ Executar selecionadas</button>
+      <button class="btn-ghost" onclick="diagnosticar()">🔍 Diagnóstico</button>
+      <button class="btn-ghost" onclick="testarAPIs()">🔑 Testar APIs</button>
+    </div>
+    <div id="status">—</div>
+    <div id="log-box"><div class="log-empty">Os resultados aparecerão aqui.</div></div>
+  </div>
+
+  <!-- ===== ABA CONFIGURAÇÕES ===== -->
+  <div id="tab-config" style="display:none">
+    <div id="config-panel"><div class="log-empty"><span class="spinner"></span>Carregando labels e configurações...</div></div>
+    <div class="btn-row" id="config-btns" style="display:none">
+      <button class="btn-save" onclick="salvarConfig()">💾 Salvar configurações</button>
+    </div>
+    <div id="config-status"></div>
+  </div>
+</div>
+
+<script>
+  var _rules   = [];
+  var _labels  = [];
+  var _config  = {};
+  var _configLoaded = false;
+
+  // ── Inicialização da aba Execução ──
+  google.script.run
+    .withSuccessHandler(function(names) {
+      _rules = names || [];
+      var box = document.getElementById("rules-box");
+      if (!_rules.length) { box.innerHTML = '<span style="color:#f87171">Nenhuma regra encontrada.</span>'; return; }
+      box.innerHTML = _rules.map(function(n, i) {
+        return '<div class="rule-item">' +
+          '<input type="checkbox" id="r' + i + '" value="' + esc(n) + '" checked>' +
+          '<label for="r' + i + '">' + esc(n) + '</label></div>';
+      }).join("");
+    })
+    .withFailureHandler(function(e) { document.getElementById("rules-box").innerHTML = '<span style="color:#f87171">' + e.message + '</span>'; })
+    .getRules();
+
+  // ── Tabs ──
+  function showTab(name) {
+    document.getElementById("tab-exec").style.display    = name === "exec"   ? "" : "none";
+    document.getElementById("tab-config").style.display  = name === "config" ? "" : "none";
+    document.querySelectorAll(".tab").forEach(function(t, i) {
+      t.classList.toggle("active", (i === 0 && name === "exec") || (i === 1 && name === "config"));
+    });
+    if (name === "config" && !_configLoaded) loadConfigTab();
+  }
+
+  // ── Carregar aba de configurações ──
+  function loadConfigTab() {
+    var labelsOk = false, configOk = false;
+    function tryRender() { if (labelsOk && configOk) renderConfigPanel(); }
+
+    google.script.run
+      .withSuccessHandler(function(l) { _labels = l || []; labelsOk = true; tryRender(); })
+      .withFailureHandler(function(e) { document.getElementById("config-panel").innerHTML = '<span style="color:#f87171">' + e.message + '</span>'; })
+      .getLabelsDisponiveis();
+
+    google.script.run
+      .withSuccessHandler(function(c) { _config = c || {}; configOk = true; tryRender(); })
+      .withFailureHandler(function(e) { document.getElementById("config-panel").innerHTML = '<span style="color:#f87171">' + e.message + '</span>'; })
+      .getConfigRegras();
+  }
+
+  function renderConfigPanel() {
+    _configLoaded = true;
+    var html = _rules.map(function(ruleName) {
+      var cfg        = _config[ruleName] || { labels: [], arquivar: false };
+      var activeSet  = {};
+      (cfg.labels || []).forEach(function(l) { activeSet[l] = true; });
+      var ruleId     = ruleName.replace(/\W/g, "_");
+      var checked    = cfg.arquivar ? "checked" : "";
+
+      var labelItems = _labels.map(function(l, li) {
+        var isChecked = activeSet[l] ? "checked" : "";
+        return '<label class="label-check-item" id="li_' + ruleId + '_' + li + '">' +
+          '<input type="checkbox" class="lbl-cb" data-rule="' + esc(ruleName) + '" value="' + esc(l) + '" ' + isChecked + '>' +
+          '<span>' + esc(l) + '</span></label>';
+      }).join("");
+
+      return '<div class="rule-config-block">' +
+        '<div class="rule-config-title">' + esc(ruleName) + '</div>' +
+        '<div class="config-row">' +
+          '<div class="config-col">' +
+            '<div class="config-col-label">Labels a aplicar</div>' +
+            '<input class="label-search" type="text" placeholder="Filtrar labels..." oninput="filtrarLabels(this, \'' + ruleId + '\')">' +
+            '<div class="label-list" id="ll_' + ruleId + '">' + labelItems + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="archive-toggle">' +
+          '<input type="checkbox" id="arch_' + ruleId + '" ' + checked + '>' +
+          '<label for="arch_' + ruleId + '">Arquivar e-mail após processar</label>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+
+    document.getElementById("config-panel").innerHTML = html || '<div class="log-empty">Nenhuma regra configurável.</div>';
+    document.getElementById("config-btns").style.display = _rules.length ? "" : "none";
+  }
+
+  function filtrarLabels(input, ruleId) {
+    var term = input.value.toLowerCase();
+    var list = document.getElementById("ll_" + ruleId);
+    list.querySelectorAll(".label-check-item").forEach(function(item) {
+      var label = item.querySelector("span").textContent.toLowerCase();
+      item.classList.toggle("hidden", term.length > 0 && label.indexOf(term) === -1);
+    });
+  }
+
+  function salvarConfig() {
+    var config = {};
+    _rules.forEach(function(ruleName) {
+      var ruleId   = ruleName.replace(/\W/g, "_");
+      var labels   = [];
+      var archEl   = document.getElementById("arch_" + ruleId);
+      document.querySelectorAll('.lbl-cb[data-rule="' + ruleName + '"]:checked').forEach(function(cb) {
+        labels.push(cb.value);
+      });
+      config[ruleName] = {
+        labels:   labels,
+        arquivar: archEl ? archEl.checked : false
+      };
+    });
+
+    document.getElementById("config-status").innerHTML = '<span class="spinner"></span>Salvando...';
+    google.script.run
+      .withSuccessHandler(function() {
+        _config = config;
+        document.getElementById("config-status").innerHTML = '✅ Configurações salvas em ' + new Date().toLocaleTimeString("pt-BR");
+      })
+      .withFailureHandler(function(e) {
+        document.getElementById("config-status").innerHTML = '❌ ' + e.message;
+      })
+      .salvarConfigRegras(config);
+  }
+
+  // ── Execução ──
+  function getSelected() {
+    return Array.from(document.querySelectorAll(".rule-item input:checked")).map(function(cb) { return cb.value; });
+  }
+
+  function rodar() {
+    var sel = getSelected();
+    if (!sel.length) { setStatus("⚠️ Selecione ao menos uma regra.", false); return; }
+    setBusy("Executando: " + sel.join(", ") + "...");
+    google.script.run.withSuccessHandler(onSuccess).withFailureHandler(onError).organizarEmails(sel);
+  }
+
+  function diagnosticar() {
+    setBusy("Lendo inbox (sem modificar)...");
+    google.script.run.withSuccessHandler(onDiag).withFailureHandler(onError).diagnosticar();
+  }
+
+  function testarAPIs() {
+    setBusy("Verificando chaves...");
+    google.script.run.withSuccessHandler(onAPIs).withFailureHandler(onError).testarAPIs();
+  }
+
+  function onSuccess(r) {
+    var logs = r.logs || [], total = r.total || 0;
+    setStatus("✅ Concluído — " + total + " thread(s) · " + new Date().toLocaleTimeString("pt-BR"), false);
+    var box = document.getElementById("log-box");
+    box.innerHTML = logs.length
+      ? logs.map(function(l) { return '<div class="log-item">' + l + '</div>'; }).join("")
+      : '<div class="log-empty">Nenhuma ação registrada.</div>';
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function onDiag(r) {
+    var threads = r.threads || [];
+    setStatus("🔍 " + threads.length + " não lido(s) no inbox · " + r.timestamp, false);
+    var box = document.getElementById("log-box");
+    if (!threads.length) { box.innerHTML = '<div class="log-empty">Inbox vazio.</div>'; return; }
+    box.innerHTML = threads.map(function(t) {
+      if (t.erro) return '<div class="diag-thread" style="color:#f87171">' + t.erro + '</div>';
+      var match = t.regra !== "nenhuma";
+      return '<div class="diag-thread">' +
+        '<div class="diag-from">' + esc(t.from) + '</div>' +
+        '<div class="diag-subject">' + esc(t.subject) + '</div>' +
+        '<span class="tag ' + (match ? "tag-match" : "tag-ai") + '">' + esc(match ? t.regra : "→ IA geral") + '</span>' +
+        '<div class="diag-labels">' + (t.labels.length ? "Labels: " + t.labels.join(", ") : "Sem labels") + '</div>' +
+        '</div>';
+    }).join("");
+  }
+
+  function onAPIs(r) {
+    var badges = ["GEMINI","GROQ","CLAUDE","OPENAI"].map(function(p) {
+      var ok = r[p] === "ok";
+      return '<span class="api-badge ' + (ok ? "api-ok" : "api-err") + '">' + (ok ? "✓" : "✗") + " " + p + '</span>';
+    }).join("");
+    setStatus("🔑 Status das chaves de API:", false);
+    document.getElementById("log-box").innerHTML =
+      '<div style="padding:8px 0"><div class="api-row">' + badges + '</div>' +
+      (r._erro ? '<div style="color:#f87171;font-size:12px;margin-top:8px">' + r._erro + '</div>' : '') +
+      '<div style="color:#64748b;font-size:12px;margin-top:12px">Chaves faltando: configure em <strong>Configurações do projeto → Propriedades do script</strong>.</div></div>';
+  }
+
+  function onError(err) {
+    setStatus("❌ " + err.message, false);
+    document.getElementById("log-box").innerHTML = '<div style="color:#f87171;font-size:13px">' + err.message + '</div>';
+  }
+
+  function setBusy(msg) {
+    document.querySelectorAll("button").forEach(function(b) { b.disabled = true; });
+    document.getElementById("log-box").innerHTML = '<div class="log-empty"><span class="spinner"></span>' + msg + '</div>';
+    document.getElementById("status").innerHTML  = '<span class="spinner"></span>' + msg;
+  }
+
+  function setStatus(html, busy) {
+    if (!busy) document.querySelectorAll("button").forEach(function(b) { b.disabled = false; });
+    document.getElementById("status").innerHTML = html;
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+</script>
+</body>
+</html>

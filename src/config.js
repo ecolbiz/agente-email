@@ -1,6 +1,6 @@
 // ==================== CONFIGURAÇÃO GLOBAL ====================
 
-const VERSION = "v0.5";
+const VERSION = "v0.7";
 
 const CONFIG = {
   MAX_THREADS: 15,
@@ -13,10 +13,7 @@ const CONFIG = {
 // Labels existentes no Gmail — NÃO são criadas automaticamente.
 // Crie o label no Gmail primeiro, depois referencie aqui.
 const LABELS = {
-  PROCESSADOS:      "-- Processados",
-  DAYCOVAL_SEGUROS: "[-daycoval-]-daycoval-seguros",
-  NEWSLETTER:       "[-newsletter-]",
-  VITOR:            "-- VITOR"
+  PROCESSADOS: "-- Processados"  // único label fixo — os demais são configurados via dashboard
 };
 
 const CONTATOS = {

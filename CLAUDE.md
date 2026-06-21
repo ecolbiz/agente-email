@@ -6,7 +6,7 @@ Agente de organização de Gmail rodando em **Google Apps Script** (GAS), deploy
 
 ## Versão atual
 
-`v0.5` — atualizar `VERSION` em `src/config.js` a cada rodada com mudanças. O número aparece visível no HTML do dashboard para o usuário confirmar que está na versão correta.
+`v0.7` — atualizar `VERSION` em `src/config.js` a cada rodada com mudanças. O número aparece visível no HTML do dashboard para o usuário confirmar que está na versão correta.
 
 **Regra: sempre que houver qualquer alteração de código, incrementar VERSION e atualizar este arquivo.**
 

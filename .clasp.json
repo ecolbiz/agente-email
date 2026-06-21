@@ -11,7 +11,8 @@
     "src/prompt-builder.js",
     "src/thread-analyzer.js",
     "src/email-classifier.js",
-    "src/main.js"
+    "src/main.js",
+    "src/dashboard.html"
   ],
   "skipSubdirectories": false
 }
