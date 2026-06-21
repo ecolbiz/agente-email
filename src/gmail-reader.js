@@ -1,8 +1,8 @@
 // ==================== LEITURA DO GMAIL ====================
 
-function buscarThreads(query, limit) {
-  Logger_.info(`Buscando threads: "${query}" (máx ${limit || CONFIG.MAX_THREADS})`);
-  return GmailApp.search(query, 0, limit || CONFIG.MAX_THREADS);
+function buscarThreads(limit) {
+  Logger_.info("Buscando: " + CONFIG.QUERY);
+  return GmailApp.search(CONFIG.QUERY, 0, limit || CONFIG.MAX_THREADS);
 }
 
 function extrairDadosMensagem(message) {
@@ -15,9 +15,18 @@ function extrairDadosMensagem(message) {
   };
 }
 
+// Aplica label SOMENTE se ela já existir no Gmail. Nunca cria labels novas.
 function aplicarLabel(thread, labelName) {
-  let label = GmailApp.getUserLabelByName(labelName);
-  if (!label) label = GmailApp.createLabel(labelName);
+  var label = GmailApp.getUserLabelByName(labelName);
+  if (!label) {
+    Logger_.warn("Label nao existe (nao criada): " + labelName);
+    return false;
+  }
   thread.addLabel(label);
-  return label;
+  return true;
+}
+
+// Todo e-mail processado (por regra ou IA) recebe esta label.
+function marcarProcessado(thread) {
+  aplicarLabel(thread, LABELS.PROCESSADOS);
 }

@@ -1,26 +1,31 @@
 // ==================== CONFIGURAÇÃO GLOBAL ====================
 
+const VERSION = "v0.5";
+
 const CONFIG = {
   MAX_THREADS: 15,
-  BODY_LIMIT: 4500,
-  SLEEP_MS: 1200,
+  BODY_LIMIT:  4500,
+  SLEEP_MS:    1200,
+  QUERY:       "in:inbox is:unread",
   PROVIDERS_ORDER: ["GEMINI", "GROQ", "CLAUDE", "OPENAI"]
 };
 
-// Labels usadas no projeto — altere aqui para refletir seus labels reais do Gmail
+// Labels existentes no Gmail — NÃO são criadas automaticamente.
+// Crie o label no Gmail primeiro, depois referencie aqui.
 const LABELS = {
-  DAYCOVAL_SEGUROS:  "[-daycoval-]-daycoval-seguros",
-  NEWSLETTER:        "[-newsletter-]",
-  DISCO_VIRTUAL:     "[-infra-]-disco-virtual"
+  PROCESSADOS:      "-- Processados",
+  DAYCOVAL_SEGUROS: "[-daycoval-]-daycoval-seguros",
+  NEWSLETTER:       "[-newsletter-]",
+  VITOR:            "-- VITOR"
 };
 
 const CONTATOS = {
   VITOR: "vitor@colbizsv.com"
 };
 
-// Em produção, configure via: Arquivo > Propriedades do projeto > Propriedades do script
+// Em produção: Configurações do projeto → Propriedades do script
 function getApiKeys() {
-  const props = PropertiesService.getScriptProperties().getProperties();
+  var props = PropertiesService.getScriptProperties().getProperties();
   return {
     GEMINI: props["GEMINI_API_KEY"],
     CLAUDE: props["ANTHROPIC_API_KEY"],

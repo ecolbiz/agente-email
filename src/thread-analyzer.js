@@ -1,6 +1,7 @@
 // ==================== HANDLERS DAS REGRAS ====================
-// Uma função por regra. Recebe (thread, message, subject, body).
-// Retorna o nome da label aplicada.
+// Cada função recebe (thread, message, subject, body).
+// Retorna string descrevendo o que foi feito.
+// NÃO chamar marcarProcessado() aqui — o loop principal já faz isso.
 
 function processarDaycoval(thread, message, subject, body) {
   aplicarLabel(thread, LABELS.DAYCOVAL_SEGUROS);
@@ -16,22 +17,22 @@ function processarNewsletter(thread, message, subject, body) {
 
 function processarAvisoDiscoVirtual(thread, message, subject, body) {
   message.forward(CONTATOS.VITOR);
-  aplicarLabel(thread, LABELS.DISCO_VIRTUAL);
+  aplicarLabel(thread, LABELS.VITOR);
   thread.markRead();
-  return "encaminhado para " + CONTATOS.VITOR + " | " + LABELS.DISCO_VIRTUAL;
+  return "encaminhado para " + CONTATOS.VITOR + " | " + LABELS.VITOR;
 }
 
 // ---------------------------------------------------------------------------
-// Diagnóstico — lê threads sem modificar nada
+// Diagnóstico — lê inbox sem modificar nada
 // ---------------------------------------------------------------------------
 
 function diagnosticar() {
-  const threads = GmailApp.search("is:unread", 0, CONFIG.MAX_THREADS);
+  var threads = GmailApp.search(CONFIG.QUERY, 0, CONFIG.MAX_THREADS);
   return {
     timestamp: new Date().toLocaleString("pt-BR"),
     threads: threads.map(function(thread) {
       try {
-        var message = thread.getMessages()[0];
+        var message    = thread.getMessages()[0];
         var regraMatch = "nenhuma";
         for (var i = 0; i < RULES.length; i++) {
           if (RULES[i].condition(thread, message)) {
