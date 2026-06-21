@@ -1,16 +1,17 @@
 {
   "scriptId": "1z7unFWNagaz1_9XAp44EypgKzh_71WMaFCEjF5CFT9PBklJJLOGA2wM5",
   "rootDir": "",
-  "scriptExtensions": [
-    ".js",
-    ".gs"
+  "scriptExtensions": [".js", ".gs"],
+  "htmlExtensions": [".html"],
+  "jsonExtensions": [".json"],
+  "filePushOrder": [
+    "src/config.js",
+    "src/logger.js",
+    "src/gmail-reader.js",
+    "src/prompt-builder.js",
+    "src/thread-analyzer.js",
+    "src/email-classifier.js",
+    "src/main.js"
   ],
-  "htmlExtensions": [
-    ".html"
-  ],
-  "jsonExtensions": [
-    ".json"
-  ],
-  "filePushOrder": [],
   "skipSubdirectories": false
 }
