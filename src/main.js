@@ -36,6 +36,15 @@ function organizarEmails(regrasSelecionadas) {
             aplicarLabel(thread, labelName);
           });
 
+          if (ruleConfig.encaminhar) {
+            try {
+              message.forward(ruleConfig.encaminhar);
+              resultado += " | encaminhado → " + ruleConfig.encaminhar;
+            } catch(fe) {
+              Logger_.error("Falha ao encaminhar para " + ruleConfig.encaminhar + ": " + fe.toString());
+            }
+          }
+
           if (ruleConfig.arquivar) arquivarThread(thread);
           marcarProcessado(thread);
 

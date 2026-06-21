@@ -1,6 +1,6 @@
 // ==================== CONFIGURAÇÃO GLOBAL ====================
 
-const VERSION = "v0.7";
+const VERSION = "v0.8";
 
 const CONFIG = {
   MAX_THREADS: 15,
@@ -16,9 +16,6 @@ const LABELS = {
   PROCESSADOS: "-- Processados"  // único label fixo — os demais são configurados via dashboard
 };
 
-const CONTATOS = {
-  VITOR: "vitor@colbizsv.com"
-};
 
 // Em produção: Configurações do projeto → Propriedades do script
 function getApiKeys() {

@@ -13,9 +13,8 @@ function processarNewsletter(thread, message, subject, body) {
 }
 
 function processarAvisoDiscoVirtual(thread, message, subject, body) {
-  message.forward(CONTATOS.VITOR);
   thread.markRead();
-  return "encaminhado para " + CONTATOS.VITOR;
+  return "ok";
 }
 
 // ---------------------------------------------------------------------------

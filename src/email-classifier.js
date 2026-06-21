@@ -142,20 +142,30 @@ function _chamarOpenAICompativel(url, key, prompt, model) {
 
 function fazerRequisicao(url, payload, provider, extraHeaders) {
   const options = {
-    method:          "post",
-    contentType:     "application/json",
-    payload:         JSON.stringify(payload),
-    headers:         extraHeaders || {},
+    method:             "post",
+    contentType:        "application/json",
+    payload:            JSON.stringify(payload),
+    headers:            extraHeaders || {},
     muteHttpExceptions: true
   };
 
   const res  = UrlFetchApp.fetch(url, options);
   const code = res.getResponseCode();
+  const body = res.getContentText();
+
+  // Sempre loga no Stackdriver para debug (visível em Execuções > Logs)
+  console.log("[" + provider + "] HTTP " + code + " → " + body.substring(0, 600));
 
   if (code !== 200) {
-    Logger_.warn(`${provider} HTTP ${code}: ${res.getContentText().substring(0, 300)}`);
+    // Logger_.error aparece no dashboard e no e-mail de resumo
+    Logger_.error("[" + provider + "] HTTP " + code + " → " + body.substring(0, 400));
     return null;
   }
 
-  return JSON.parse(res.getContentText());
+  try {
+    return JSON.parse(body);
+  } catch (e) {
+    Logger_.error("[" + provider + "] JSON inválido: " + body.substring(0, 200));
+    return null;
+  }
 }
