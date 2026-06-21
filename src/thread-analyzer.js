@@ -1,33 +1,46 @@
-// ==================== ANÁLISE E PROCESSAMENTO DE THREADS ====================
-// Cada função aqui é o handler de uma regra específica.
+// ==================== HANDLERS DAS REGRAS ====================
+// Uma função por regra. Recebe (thread, message, subject, body).
 // Retorna o nome da label aplicada.
 
 function processarDaycoval(thread, message, subject, body) {
-  const sub = _subCategoriaDaycoval(subject);
-  const labelName = `Daycoval/${sub}`;
-
-  aplicarLabel(thread, labelName);
+  aplicarLabel(thread, LABELS.DAYCOVAL_SEGUROS);
   thread.markRead();
-
-  return labelName;
+  return LABELS.DAYCOVAL_SEGUROS;
 }
 
-function processarDaycovalAntigos(thread, message, subject, body) {
-  // Reclassifica threads antigos sem marcar como lido novamente
-  const sub = _subCategoriaDaycoval(subject);
-  const labelName = `Daycoval/${sub}`;
-  aplicarLabel(thread, labelName);
-  return labelName;
+function processarNewsletter(thread, message, subject, body) {
+  aplicarLabel(thread, LABELS.NEWSLETTER);
+  thread.markRead();
+  return LABELS.NEWSLETTER;
 }
 
 // ---------------------------------------------------------------------------
-// Helpers privados (convenção: prefixo _ indica uso interno deste arquivo)
+// Diagnóstico — lê threads sem modificar nada
 // ---------------------------------------------------------------------------
 
-function _subCategoriaDaycoval(subject) {
-  const s = subject.toLowerCase();
-  if (s.includes("renovacao") || s.includes("renovação")) return "Renovacao";
-  if (s.includes("fatura") || s.includes("boleto") || s.includes("pagamento")) return "Financeiro";
-  if (s.includes("aviso") || s.includes("alerta") || s.includes("disco")) return "Avisos";
-  return "Geral";
+function diagnosticar() {
+  const threads = GmailApp.search("is:unread", 0, CONFIG.MAX_THREADS);
+  return {
+    timestamp: new Date().toLocaleString("pt-BR"),
+    threads: threads.map(function(thread) {
+      try {
+        var message = thread.getMessages()[0];
+        var regraMatch = "nenhuma";
+        for (var i = 0; i < RULES.length; i++) {
+          if (RULES[i].condition(thread, message)) {
+            regraMatch = RULES[i].name;
+            break;
+          }
+        }
+        return {
+          from:    message.getFrom(),
+          subject: message.getSubject(),
+          labels:  thread.getLabels().map(function(l) { return l.getName(); }),
+          regra:   regraMatch
+        };
+      } catch (e) {
+        return { erro: e.toString() };
+      }
+    })
+  };
 }

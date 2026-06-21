@@ -7,6 +7,12 @@ const CONFIG = {
   PROVIDERS_ORDER: ["GEMINI", "GROQ", "CLAUDE", "OPENAI"]
 };
 
+// Labels usadas no projeto — altere aqui para refletir seus labels reais do Gmail
+const LABELS = {
+  DAYCOVAL_SEGUROS: "[-daycoval-]-daycoval-seguros",
+  NEWSLETTER:       "[-newsletter-]"
+};
+
 // Em produção, configure via: Arquivo > Propriedades do projeto > Propriedades do script
 function getApiKeys() {
   const props = PropertiesService.getScriptProperties().getProperties();

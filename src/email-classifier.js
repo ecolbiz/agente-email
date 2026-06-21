@@ -3,23 +3,28 @@
 // Adicione novas regras aqui. A primeira que bater é aplicada (ordem importa).
 const RULES = [
   {
-    name: "Daycoval Seguros (Atual)",
+    name: "Daycoval Seguros",
     condition: function(thread, message) {
       const from = message.getFrom().toLowerCase();
-      return from.includes("@daycovalseguros.com.br") || from.includes("daycoval");
+      return from.includes("@daycovalseguros.com.br");
     },
     action: processarDaycoval
   },
   {
-    name: "Daycoval Seguros (Antigos)",
+    name: "Newsletters",
     condition: function(thread, message) {
       const from    = message.getFrom().toLowerCase();
       const subject = message.getSubject().toLowerCase();
-      return (from.includes("daycoval") || subject.includes("daycoval")) && !message.isUnread();
+      return from.includes("newsletter") ||
+             from.includes("noreply") ||
+             from.includes("no-reply") ||
+             subject.includes("newsletter") ||
+             subject.includes("descadastrar") ||
+             subject.includes("unsubscribe");
     },
-    action: processarDaycovalAntigos
+    action: processarNewsletter
   }
-  // { name: "Nova Regra", condition: function(...){...}, action: processarNovaRegra }
+  // Adicione novas regras aqui
 ];
 
 // ---------------------------------------------------------------------------
