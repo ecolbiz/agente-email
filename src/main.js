@@ -3,18 +3,25 @@
 function organizarEmails(regrasSelecionadas) {
   Logger_.clear();
 
+  var dynRules = [];
+  try {
+    dynRules = getDynamicRules()
+      .filter(function(r) { return r.enabled !== false; })
+      .map(function(r) { return { _dynamic: true, id: r.id, name: r.name, conditions: r.conditions, logic: r.logic, dynAction: r.action }; });
+  } catch(e) {}
+
+  var allRules = dynRules.concat(RULES); // RULES = [Geral (IA)]
+
   var rulesToRun = (regrasSelecionadas && regrasSelecionadas.length)
-    ? RULES.filter(function(r) { return regrasSelecionadas.indexOf(r.name) !== -1; })
-    : RULES;
+    ? allRules.filter(function(r) { return regrasSelecionadas.indexOf(r.name) !== -1; })
+    : allRules;
 
   if (!rulesToRun.length) {
     return { logs: ["⚠️ Nenhuma regra selecionada."], total: 0 };
   }
 
-  var allConfig    = {};
   var globalConfig = {};
-  try { allConfig    = getConfigRegras();  } catch(e) {}
-  try { globalConfig = getGlobalConfig();  } catch(e) {}
+  try { globalConfig = getGlobalConfig(); } catch(e) {}
 
   var maxThreads = globalConfig.maxThreads || CONFIG.MAX_THREADS;
   var sleepMs    = globalConfig.sleepMs    || CONFIG.SLEEP_MS;
@@ -28,16 +35,15 @@ function organizarEmails(regrasSelecionadas) {
   }
 
   for (var i = 0; i < threads.length; i++) {
-    var thread   = threads[i];
+    var thread = threads[i];
     try {
-      var messages  = thread.getMessages();
-      var processed = false;
+      var messages = thread.getMessages();
 
       for (var j = 0; j < rulesToRun.length; j++) {
         var rule = rulesToRun[j];
 
         if (rule.action === null) {
-          // "Geral (IA)": usa a última mensagem não lida (ou a última do thread)
+          // Geral (IA): usa a última mensagem não lida (ou a última do thread)
           var msgIA = messages[messages.length - 1];
           for (var m = messages.length - 1; m >= 0; m--) {
             if (messages[m].isUnread()) { msgIA = messages[m]; break; }
@@ -49,45 +55,41 @@ function organizarEmails(regrasSelecionadas) {
             marcarProcessado(thread);
             Logger_.ai("IA", analysis.categoria + " | " + dadosIA.subject);
           }
-          processed = true;
           break;
         }
 
-        // Regra específica: verifica TODAS as mensagens do thread
-        var matchMsg = null;
-        for (var m = 0; m < messages.length; m++) {
-          if (rule.condition(thread, messages[m])) { matchMsg = messages[m]; break; }
-        }
-        if (!matchMsg) continue;
-
-        var ruleConfig = allConfig[rule.name] || { labels: [], arquivar: false };
-        var dados      = extrairDadosMensagem(matchMsg);
-        var resultado  = rule.action(thread, matchMsg, dados.subject, dados.body);
-
-        (ruleConfig.labels || []).forEach(function(labelName) {
-          aplicarLabel(thread, labelName);
-        });
-
-        if (ruleConfig.encaminhar) {
-          try {
-            matchMsg.forward(ruleConfig.encaminhar);
-            resultado += " | encaminhado → " + ruleConfig.encaminhar;
-          } catch(fe) {
-            Logger_.error("Falha ao encaminhar para " + ruleConfig.encaminhar + ": " + fe.toString());
+        if (rule._dynamic) {
+          var matchMsg = null;
+          for (var m = 0; m < messages.length; m++) {
+            if (avaliarCondicaoDinamica(messages[m], rule.conditions, rule.logic)) {
+              matchMsg = messages[m]; break;
+            }
           }
+          if (!matchMsg) continue;
+
+          var dados     = extrairDadosMensagem(matchMsg);
+          var dynAction = rule.dynAction || {};
+          var resultado = "ok";
+
+          (dynAction.labels || []).forEach(function(labelName) { aplicarLabel(thread, labelName); });
+
+          if (dynAction.encaminhar) {
+            try {
+              matchMsg.forward(dynAction.encaminhar);
+              resultado += " | encaminhado → " + dynAction.encaminhar;
+            } catch(fe) {
+              Logger_.error("Falha ao encaminhar para " + dynAction.encaminhar + ": " + fe.toString());
+            }
+          }
+
+          if (dynAction.arquivar) arquivarThread(thread);
+          marcarProcessado(thread);
+
+          var info = (dynAction.labels || []).length ? dynAction.labels.join(", ") : "(sem label)";
+          Logger_.rule(rule.name, dados.subject, resultado + " | " + info);
+          break;
         }
-
-        if (ruleConfig.arquivar) arquivarThread(thread);
-        marcarProcessado(thread);
-
-        var info = (ruleConfig.labels || []).length
-          ? ruleConfig.labels.join(", ")
-          : "(sem label configurada)";
-        Logger_.rule(rule.name, dados.subject, resultado + " | " + info);
-        processed = true;
-        break;
       }
-      // Se nenhuma regra selecionada bateu: thread ignorada (não tocada)
     } catch (e) {
       Logger_.error("Erro: " + e.toString());
     }
@@ -105,7 +107,13 @@ function organizarEmails(regrasSelecionadas) {
 // ---------------------------------------------------------------------------
 
 function getRules() {
-  return RULES.map(function(r) { return r.name; });
+  var dynNames = [];
+  try {
+    dynNames = getDynamicRules()
+      .filter(function(r) { return r.enabled !== false; })
+      .map(function(r) { return r.name; });
+  } catch(e) {}
+  return dynNames.concat(RULES.map(function(r) { return r.name; }));
 }
 
 function getLabelsDisponiveis() {
@@ -114,18 +122,18 @@ function getLabelsDisponiveis() {
     .sort(function(a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
 }
 
-function getConfigRegras() {
-  var stored = PropertiesService.getScriptProperties().getProperty("RULES_CONFIG");
-  return stored ? JSON.parse(stored) : {};
+function getDynamicRules() {
+  var stored = PropertiesService.getScriptProperties().getProperty("DYNAMIC_RULES");
+  return stored ? JSON.parse(stored) : [];
 }
 
-function salvarConfigRegras(config) {
-  PropertiesService.getScriptProperties().setProperty("RULES_CONFIG", JSON.stringify(config));
+function saveDynamicRules(rules) {
+  PropertiesService.getScriptProperties().setProperty("DYNAMIC_RULES", JSON.stringify(rules));
   return true;
 }
 
 function getGlobalConfig() {
-  var stored = PropertiesService.getScriptProperties().getProperty("GLOBAL_CONFIG");
+  var stored   = PropertiesService.getScriptProperties().getProperty("GLOBAL_CONFIG");
   var defaults = { maxThreads: CONFIG.MAX_THREADS, sleepMs: CONFIG.SLEEP_MS };
   if (!stored) return defaults;
   var parsed = JSON.parse(stored);

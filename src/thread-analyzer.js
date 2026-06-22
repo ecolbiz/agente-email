@@ -1,28 +1,11 @@
-// ==================== HANDLERS DAS REGRAS ====================
-// Fazem apenas a ação específica da regra.
-// Labels e arquivamento são aplicados pelo loop principal via config do PropertiesService.
-
-function processarDaycoval(thread, message, subject, body) {
-  thread.markRead();
-  return "lido";
-}
-
-function processarNewsletter(thread, message, subject, body) {
-  thread.markRead();
-  return "lido";
-}
-
-function processarAvisoDiscoVirtual(thread, message, subject, body) {
-  thread.markRead();
-  return "ok";
-}
-
-// ---------------------------------------------------------------------------
-// Diagnóstico — lê inbox sem modificar nada
-// ---------------------------------------------------------------------------
+// ==================== DIAGNÓSTICO ====================
+// Lê inbox sem modificar nada.
 
 function diagnosticar() {
-  var threads = GmailApp.search(CONFIG.QUERY, 0, CONFIG.MAX_THREADS);
+  var threads  = GmailApp.search(CONFIG.QUERY, 0, CONFIG.MAX_THREADS);
+  var dynRules = [];
+  try { dynRules = getDynamicRules().filter(function(r) { return r.enabled !== false; }); } catch(e) {}
+
   return {
     timestamp: new Date().toLocaleString("pt-BR"),
     threads: threads.map(function(thread) {
@@ -31,19 +14,22 @@ function diagnosticar() {
         var regraMatch = "nenhuma";
         var matchFrom  = messages[0].getFrom();
         var matchSubj  = messages[0].getSubject();
+        var found      = false;
 
-        for (var i = 0; i < RULES.length; i++) {
-          var rule = RULES[i];
-          if (rule.action === null) { regraMatch = rule.name; break; } // catch-all
-          for (var m = 0; m < messages.length; m++) {
-            if (rule.condition(thread, messages[m])) {
+        for (var i = 0; i < dynRules.length && !found; i++) {
+          var rule = dynRules[i];
+          for (var m = 0; m < messages.length && !found; m++) {
+            if (avaliarCondicaoDinamica(messages[m], rule.conditions, rule.logic)) {
               regraMatch = rule.name;
               matchFrom  = messages[m].getFrom();
               matchSubj  = messages[m].getSubject();
-              break;
+              found = true;
             }
           }
-          if (regraMatch !== "nenhuma") break;
+        }
+
+        if (!found) {
+          regraMatch = RULES[0] ? RULES[0].name : "Geral (IA)";
         }
 
         return {

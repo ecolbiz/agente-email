@@ -6,7 +6,7 @@ Agente de organização de Gmail rodando em **Google Apps Script** (GAS), deploy
 
 ## Versão atual
 
-`v1.4` — atualizar `VERSION` em `src/config.js` a cada rodada com mudanças. O número aparece visível no HTML do dashboard para o usuário confirmar que está na versão correta.
+`v1.5` — atualizar `VERSION` em `src/config.js` a cada rodada com mudanças. O número aparece visível no HTML do dashboard para o usuário confirmar que está na versão correta.
 
 **Regra: sempre que houver qualquer alteração de código, incrementar VERSION e atualizar este arquivo.**
 
@@ -46,23 +46,34 @@ config.js → logger.js → gmail-reader.js → prompt-builder.js
   → thread-analyzer.js → email-classifier.js → main.js
 ```
 
+## Arquitetura de regras (v1.5+)
+
+**Regras dinâmicas** (criadas/editadas via aba "📋 Regras" do dashboard):
+- Armazenadas em `PropertiesService` sob a chave `DYNAMIC_RULES` (array JSON).
+- Cada regra contém: `id`, `name`, `enabled`, `conditions[]`, `logic` (AND/OR), `action` ({labels, encaminhar, arquivar}).
+- Suporte a condições: `sender_domain`, `sender_email`, `sender_contains`, `subject` (com `*` curinga).
+- CRUD completo: criar, editar, ativar/desativar, deletar — sem tocar no código.
+
+**Regra fixa**: apenas `Geral (IA)` permanece hardcoded em `RULES` (email-classifier.js). Ela é o catch-all e usa IA para classificar.
+
+**Avaliação de condições**: `avaliarCondicaoDinamica(message, conditions, logic)` em `email-classifier.js`.
+
 ## Onde adicionar código novo
 
 | O que fazer                          | Onde                             |
 |--------------------------------------|----------------------------------|
-| Nova regra (condição + ação)         | `src/email-classifier.js` (RULES) |
-| Handler da nova regra                | `src/thread-analyzer.js`         |
-| Novo label                           | `src/config.js` (LABELS) — após criar no Gmail |
-| Novo contato para encaminhamento     | `src/config.js` (CONTATOS)       |
+| Nova regra de e-mail                 | Dashboard → aba "📋 Regras"      |
+| Novo tipo de condição                | `avaliarCondicaoDinamica()` em `email-classifier.js` + opção no form do dashboard |
+| Novo label                           | Criar no Gmail; disponível automaticamente no dashboard |
 | Novo provedor de IA                  | `src/email-classifier.js` (_chamarProvider) |
 | Novo tipo de prompt                  | `src/prompt-builder.js`          |
 
 ## Convenções
 
-- Handlers em `thread-analyzer.js` NÃO chamam `marcarProcessado()` — o loop em `main.js` faz isso.
 - `Logger_.rule()` e `Logger_.ai()` acumulam no histórico → aparecem no e-mail de resumo e no dashboard.
 - `Logger_.info()` e `Logger_.warn()` só vão ao console do GAS (Stackdriver), não ao resumo.
 - Funções prefixadas com `_` são privadas ao arquivo (convenção, sem enforcement).
+- `marcarProcessado()` é chamado pelo loop de `main.js`, não pelas regras individualmente.
 
 ## Deploy
 

@@ -1,45 +1,45 @@
 // ==================== REGRAS E CLASSIFICAÇÃO VIA IA ====================
 
-// Adicione novas regras aqui. A primeira que bater é aplicada (ordem importa).
+// Única regra fixa: IA geral (catch-all). Demais regras são dinâmicas (CRUD no dashboard).
 const RULES = [
   {
-    name: "Daycoval Seguros",
-    condition: function(thread, message) {
-      const from = message.getFrom().toLowerCase();
-      return from.includes("@daycovalseguros.com.br");
-    },
-    action: processarDaycoval
-  },
-  {
-    name: "Newsletters",
-    condition: function(thread, message) {
-      const from    = message.getFrom().toLowerCase();
-      const subject = message.getSubject().toLowerCase();
-      return from.includes("newsletter") ||
-             from.includes("noreply") ||
-             from.includes("no-reply") ||
-             subject.includes("newsletter") ||
-             subject.includes("descadastrar") ||
-             subject.includes("unsubscribe");
-    },
-    action: processarNewsletter
-  },
-  {
-    name: "Aviso de Disco Virtual",
-    condition: function(thread, message) {
-      const subject = message.getSubject().toLowerCase();
-      return subject.includes("aviso de espaço em disco virtual") ||
-             subject.includes("aviso de espaco em disco virtual");
-    },
-    action: processarAvisoDiscoVirtual
-  },
-  {
-    name: "Geral (IA)",
-    condition: function(thread, message) { return true; }, // catch-all — só ativa se o usuário marcar
-    action: null  // null = sinal para o loop principal usar classificação por IA
+    name:      "Geral (IA)",
+    condition: function() { return true; }, // catch-all — só ativa se o usuário marcar
+    action:    null  // null = sinal para o loop principal usar classificação por IA
   }
-  // Adicione novas regras acima de "Geral (IA)"
 ];
+
+// ---------------------------------------------------------------------------
+// Avaliação de condições dinâmicas
+// ---------------------------------------------------------------------------
+
+function avaliarCondicaoDinamica(message, conditions, logic) {
+  var from    = message.getFrom().toLowerCase();
+  var subject = message.getSubject().toLowerCase();
+
+  var resultados = (conditions || []).map(function(cond) {
+    var val = (cond.value || "").toLowerCase().trim();
+    if (!val) return false;
+    switch (cond.type) {
+      case "sender_domain":
+        return from.indexOf("@" + val) !== -1;
+      case "sender_email":
+        return from.indexOf(val) !== -1;
+      case "sender_contains":
+        return from.indexOf(val) !== -1;
+      case "subject":
+        var escaped = val.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
+        return new RegExp("^" + escaped + "$").test(subject);
+      default:
+        return false;
+    }
+  });
+
+  if (!resultados.length) return false;
+  return (logic === "AND")
+    ? resultados.every(function(r) { return r; })
+    : resultados.some(function(r) { return r; });
+}
 
 // ---------------------------------------------------------------------------
 // Classificação via IA com fallback entre provedores
@@ -74,12 +74,6 @@ function chamarIAComFallback(subject, body, availableLabels) {
 
   Logger_.error("Todos os provedores de IA falharam para: " + subject);
   return null;
-}
-
-function aplicarLabelSimples(thread, categoria) {
-  const labelName = `AI/${categoria}`;
-  aplicarLabel(thread, labelName);
-  thread.markRead();
 }
 
 // ---------------------------------------------------------------------------
