@@ -1,8 +1,33 @@
 // ==================== LEITURA DO GMAIL ====================
 
-function buscarThreads(limit) {
-  Logger_.info("Buscando: " + CONFIG.QUERY);
-  return GmailApp.search(CONFIG.QUERY, 0, limit || CONFIG.MAX_THREADS);
+function buscarThreads(limit, categoryFilter) {
+  var lim = limit || CONFIG.MAX_THREADS;
+
+  if (!categoryFilter) {
+    Logger_.info("Buscando: " + CONFIG.QUERY);
+    return GmailApp.search(CONFIG.QUERY, 0, lim);
+  }
+
+  // Busca 1: e-mails na categoria selecionada
+  // Busca 2: e-mails com labels de usuário (independente de categoria)
+  // Merge por ID para evitar duplicatas e incluir threads com labels
+  var q1 = CONFIG.QUERY + " category:" + categoryFilter;
+  var q2 = CONFIG.QUERY + " has:userlabels";
+  Logger_.info("Buscando: " + q1 + " | " + q2);
+
+  var seen    = {};
+  var threads = [];
+
+  GmailApp.search(q1, 0, lim).forEach(function(t) {
+    var id = t.getId();
+    if (!seen[id]) { seen[id] = true; threads.push(t); }
+  });
+  GmailApp.search(q2, 0, lim).forEach(function(t) {
+    var id = t.getId();
+    if (!seen[id]) { seen[id] = true; threads.push(t); }
+  });
+
+  return threads.slice(0, lim);
 }
 
 function extrairDadosMensagem(message) {

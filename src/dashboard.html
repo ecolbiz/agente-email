@@ -6,7 +6,7 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,sans-serif;background:#f0f2f5;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:28px 16px}
-    .card{background:#fff;border-radius:12px;padding:28px;width:100%;max-width:720px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+    .card{background:#fff;border-radius:12px;padding:28px;width:100%;max-width:740px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
     .top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px}
     h1{font-size:20px;color:#1a1a2e}
     .version{font-size:11px;background:#f1f5f9;color:#64748b;padding:2px 8px;border-radius:20px;font-weight:700}
@@ -31,6 +31,7 @@
     .btn-ghost{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
     .btn-save{background:#059669;color:#fff}
     .btn-danger{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+    .btn-sm{padding:4px 10px;font-size:12px;border-radius:6px}
 
     #status{font-size:13px;color:#6b7280;margin-bottom:10px;min-height:20px}
     #log-box{background:#0f172a;border-radius:8px;padding:14px;min-height:120px;max-height:360px;overflow-y:auto}
@@ -49,7 +50,7 @@
     .tag-ai{background:#1e3a5f;color:#93c5fd}
     .diag-labels{color:#64748b;font-size:11px;margin-top:4px}
 
-    /* Shared config/rules styles */
+    /* Shared styles */
     .config-col-label{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px}
     .label-search{width:100%;padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;margin-bottom:6px}
     .label-list{max-height:160px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:6px;padding:4px}
@@ -68,32 +69,56 @@
     .global-row{display:flex;gap:20px;flex-wrap:wrap}
     .global-field{display:flex;flex-direction:column;gap:4px;min-width:160px}
     .global-field label{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase}
-    .global-field input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;width:100%}
-    .global-field input:focus{outline:none;border-color:#4f46e5}
+    .global-field input,.global-field select{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;width:100%;color:#334155;background:#fff}
+    .global-field input:focus,.global-field select:focus{outline:none;border-color:#4f46e5}
     #config-status{font-size:13px;margin-top:12px;min-height:20px}
-
-    /* Rules CRUD */
-    .rule-list-item{border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:10px;transition:opacity .2s}
-    .rule-list-item.disabled{opacity:.45}
-    .rule-list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
-    .rule-list-name{font-size:14px;font-weight:700;color:#1e293b}
-    .rule-list-actions{display:flex;gap:6px;align-items:center}
-    .rule-list-desc{font-size:12px;color:#64748b;margin-top:2px}
-    .toggle-label{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#64748b;cursor:pointer}
-    .cond-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-    .cond-type{padding:7px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;flex:0 0 220px}
-    .cond-value{flex:1;padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#334155}
-    .cond-type:focus,.cond-value:focus{outline:none;border-color:#4f46e5}
-    .cond-remove{background:none;border:1px solid #e2e8f0;border-radius:6px;width:30px;height:30px;cursor:pointer;color:#94a3b8;font-size:14px;padding:0;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-    .cond-remove:hover{border-color:#f87171;color:#f87171}
+    .section-box{border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:14px}
     .form-field{margin-bottom:14px}
     .form-field > label{display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px}
     .form-input{width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;color:#334155}
     .form-input:focus{outline:none;border-color:#4f46e5}
-    .section-box{border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:14px}
-    .logic-select{padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px}
+    .logic-select{padding:5px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#334155;background:#fff}
+
+    /* Rules CRUD list */
+    .rule-list-item{border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:10px}
+    .rule-list-item.disabled{opacity:.45}
+    .rule-list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+    .rule-list-name{font-size:14px;font-weight:700;color:#1e293b}
+    .rule-list-actions{display:flex;gap:6px;align-items:center}
+    .rule-list-desc{font-size:12px;color:#64748b;margin-top:3px;line-height:1.5}
+    .toggle-label{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#64748b;cursor:pointer}
+
+    /* Condition groups */
+    .group-logic-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .condition-group{border:1px solid #cbd5e1;border-radius:8px;padding:12px;margin-bottom:0}
+    .group-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .group-title{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase}
+    .group-separator{display:flex;align-items:center;gap:8px;margin:10px 0}
+    .group-separator-line{flex:1;height:1px;background:#e2e8f0}
+    .group-sep-badge{font-size:11px;font-weight:700;color:#64748b;background:#f1f5f9;border:1px solid #e2e8f0;padding:2px 10px;border-radius:20px;white-space:nowrap}
+    .cond-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+    .cond-type{padding:7px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;flex:0 0 210px;color:#334155;background:#fff}
+    .cond-value{flex:1;padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;color:#334155}
+    .cond-type:focus,.cond-value:focus{outline:none;border-color:#4f46e5}
+    .cond-remove{background:none;border:1px solid #e2e8f0;border-radius:6px;width:30px;height:30px;cursor:pointer;color:#94a3b8;font-size:15px;padding:0;flex-shrink:0;display:flex;align-items:center;justify-content:center;line-height:1}
+    .cond-remove:hover{border-color:#f87171;color:#f87171}
+
     #rules-tab-status,#rules-form-status{font-size:13px;margin-top:8px;min-height:18px}
 
+    /* Help modal */
+    .help-btn{width:18px;height:18px;border-radius:50%;background:#e2e8f0;color:#64748b;border:none;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;flex-shrink:0}
+    .help-btn:hover{background:#c7d2fe;color:#4f46e5;opacity:1}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
+    .modal-overlay.open{display:flex}
+    .modal{background:#fff;border-radius:12px;padding:24px;max-width:480px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);position:relative}
+    .modal h3{font-size:14px;font-weight:700;color:#1e293b;margin-bottom:14px}
+    .modal-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:18px;color:#94a3b8;cursor:pointer;padding:0;line-height:1}
+    .modal-close:hover{color:#334155;opacity:1}
+    .help-row{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f1f5f9}
+    .help-row:last-child{border:none;margin:0;padding:0}
+    .help-type{font-size:12px;font-weight:700;color:#4f46e5;margin-bottom:4px}
+    .help-desc{font-size:12px;color:#475569;line-height:1.5}
+    .help-ex{font-size:11px;color:#64748b;background:#f8fafc;border-radius:5px;padding:5px 8px;margin-top:5px;line-height:1.6}
     .spinner{display:inline-block;width:13px;height:13px;border:2px solid #6b7280;border-top-color:#4f46e5;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
@@ -108,6 +133,7 @@
   <div class="tabs">
     <button class="tab active" onclick="showTab('exec')">Execução</button>
     <button class="tab" onclick="showTab('rules')">📋 Regras</button>
+    <button class="tab" onclick="showTab('stats')">📊 Consumo IA</button>
     <button class="tab" onclick="showTab('config')">⚙️ Configurações</button>
   </div>
 
@@ -127,20 +153,18 @@
   <!-- ===== ABA REGRAS ===== -->
   <div id="tab-rules" style="display:none">
 
-    <!-- Lista de regras -->
     <div id="rules-list-view">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <div class="section-title" style="margin:0">Regras configuradas</div>
-        <button class="btn-run" style="padding:7px 14px;font-size:12px" onclick="novaRegra()">+ Nova Regra</button>
+        <button class="btn-run btn-sm" style="padding:7px 14px" onclick="novaRegra()">+ Nova Regra</button>
       </div>
       <div id="rules-crud-list"><div class="log-empty"><span class="spinner"></span>Carregando...</div></div>
     </div>
 
-    <!-- Formulário criar / editar -->
     <div id="rules-form-view" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <div class="section-title" style="margin:0" id="form-view-title">Nova Regra</div>
-        <button class="btn-ghost" style="padding:6px 12px;font-size:12px" onclick="mostrarListaRegras()">← Voltar</button>
+        <button class="btn-ghost btn-sm" onclick="mostrarListaRegras()">← Voltar</button>
       </div>
 
       <input type="hidden" id="rule-edit-id">
@@ -155,20 +179,23 @@
         <label for="rule-edit-enabled" style="font-size:13px;color:#374151;cursor:pointer">Regra ativa</label>
       </div>
 
-      <!-- Condições -->
+      <!-- Condições com grupos -->
       <div class="section-box">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div class="section-title" style="margin:0">Condições</div>
+        <div class="group-logic-bar">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="section-title" style="margin:0">Condições</div>
+            <button class="help-btn" onclick="document.getElementById('help-modal').classList.add('open')" title="Ajuda sobre tipos de condição">?</button>
+          </div>
           <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:12px;color:#64748b;font-weight:600">Lógica:</span>
-            <select id="rule-edit-logic" class="logic-select">
-              <option value="OR">Qualquer uma (OU)</option>
-              <option value="AND">Todas (E)</option>
+            <span style="font-size:12px;color:#64748b;font-weight:600">Grupos conectados por:</span>
+            <select id="rule-edit-group-logic" class="logic-select" onchange="updateSeparatorLabels()">
+              <option value="OR">OU (qualquer grupo)</option>
+              <option value="AND">E (todos os grupos)</option>
             </select>
           </div>
         </div>
-        <div id="conditions-container"></div>
-        <button class="btn-ghost" onclick="addConditionRow()" style="margin-top:4px;font-size:12px;padding:6px 12px">+ Adicionar condição</button>
+        <div id="condition-groups-container"></div>
+        <button class="btn-ghost btn-sm" onclick="addConditionGroup()" style="margin-top:10px">+ Grupo de condições</button>
       </div>
 
       <!-- Ações -->
@@ -197,6 +224,17 @@
     <div id="rules-tab-status"></div>
   </div>
 
+  <!-- ===== ABA CONSUMO IA ===== -->
+  <div id="tab-stats" style="display:none">
+    <div id="stats-panel"><div class="log-empty"><span class="spinner"></span>Carregando...</div></div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn-ghost" onclick="loadStatsTab(true)">🔄 Atualizar</button>
+      <button class="btn-danger" onclick="confirmarResetStats()">🗑️ Zerar contadores</button>
+    </div>
+    <div id="stats-status" style="font-size:13px;min-height:18px"></div>
+    <p style="font-size:11px;color:#94a3b8;margin-top:12px;line-height:1.6">ℹ️ Registra chamadas à IA desde o último reset. Para custos e tokens exatos, consulte o painel de cada provedor.</p>
+  </div>
+
   <!-- ===== ABA CONFIGURAÇÕES ===== -->
   <div id="tab-config" style="display:none">
     <div class="global-config-box">
@@ -210,6 +248,17 @@
           <label>Intervalo entre e-mails (ms)</label>
           <input type="number" id="cfg-sleep-ms" min="200" max="5000" step="100" value="1200">
         </div>
+        <div class="global-field" style="min-width:220px">
+          <label>Categoria do inbox</label>
+          <select id="cfg-category">
+            <option value="">Todas (Primary + Promoções + Social)</option>
+            <option value="primary">Apenas Primary</option>
+            <option value="promotions">Apenas Promoções</option>
+            <option value="social">Apenas Social</option>
+            <option value="updates">Apenas Atualizações</option>
+            <option value="forums">Apenas Fóruns</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="btn-row">
@@ -219,12 +268,62 @@
   </div>
 </div>
 
+<!-- Modal de ajuda: tipos de condição -->
+<div class="modal-overlay" id="help-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('help-modal').classList.remove('open')">✕</button>
+    <h3>Tipos de condição do remetente</h3>
+    <div class="help-row">
+      <div class="help-type">Domínio do remetente</div>
+      <div class="help-desc">Verifica se o e-mail veio de <strong>qualquer endereço</strong> daquele domínio.</div>
+      <div class="help-ex">
+        Valor: <strong>daycovalseguros.com.br</strong><br>
+        ✅ shirlei@daycovalseguros.com.br<br>
+        ✅ noreply@daycovalseguros.com.br<br>
+        ❌ contato@daycoval.com.br
+      </div>
+    </div>
+    <div class="help-row">
+      <div class="help-type">Email do remetente</div>
+      <div class="help-desc">Verifica se o texto aparece em qualquer parte do campo "De:", incluindo o nome exibido.</div>
+      <div class="help-ex">
+        Valor: <strong>shirlei.lopes@daycovalseguros.com.br</strong><br>
+        ✅ shirlei.lopes@daycovalseguros.com.br<br>
+        ✅ Shirlei Lopes &lt;shirlei.lopes@daycovalseguros.com.br&gt;<br>
+        ❌ outro@daycovalseguros.com.br
+      </div>
+    </div>
+    <div class="help-row">
+      <div class="help-type">Remetente contém</div>
+      <div class="help-desc">Busca um fragmento de texto em qualquer parte do campo "De:". Útil para padrões que aparecem em vários remetentes.</div>
+      <div class="help-ex">
+        Valor: <strong>noreply</strong><br>
+        ✅ noreply@empresa.com, noreply@outra.com<br>
+        Valor: <strong>newsletter</strong><br>
+        ✅ news@newsletter.com, newsletter@loja.com.br
+      </div>
+    </div>
+    <div class="help-row">
+      <div class="help-type">Assunto (use * como curinga)</div>
+      <div class="help-desc">Compara o assunto do e-mail. Use <strong>*</strong> para qualquer trecho de texto.</div>
+      <div class="help-ex">
+        <strong>*aviso*</strong> → bate em qualquer assunto que contenha "aviso"<br>
+        <strong>Fatura *</strong> → assuntos que começam com "Fatura"<br>
+        <strong>* confirmação</strong> → assuntos que terminam com "confirmação"
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-  var _rules        = [];
-  var _labels       = [];
-  var _dynamicRules = [];
-  var _configLoaded = false;
-  var _rulesLoaded  = false;
+  var _rules           = [];
+  var _labels          = [];
+  var _dynamicRules    = [];
+  var _configLoaded    = false;
+  var _rulesLoaded     = false;
+  var _statsLoaded     = false;
+  var _condGroupsData  = [];  // [{logic, conditions:[{type,value}]}]
+  var _groupLogic      = "OR";
 
   var COND_LABELS = {
     sender_domain:   "Domínio do remetente",
@@ -233,7 +332,7 @@
     subject:         "Assunto (use * como curinga)"
   };
 
-  // ── Inicialização: carrega regras para aba Execução ──
+  // ── Inicialização: aba Execução ──
   google.script.run
     .withSuccessHandler(function(names) { _rules = names || []; renderExecRules(); })
     .withFailureHandler(function(e) {
@@ -253,14 +352,72 @@
 
   // ── Tabs ──
   function showTab(name) {
-    ["exec","rules","config"].forEach(function(t) {
+    ["exec","rules","stats","config"].forEach(function(t) {
       document.getElementById("tab-" + t).style.display = (t === name) ? "" : "none";
     });
     document.querySelectorAll(".tab").forEach(function(btn, i) {
-      btn.classList.toggle("active", ["exec","rules","config"][i] === name);
+      btn.classList.toggle("active", ["exec","rules","stats","config"][i] === name);
     });
     if (name === "config" && !_configLoaded) loadConfigTab();
     if (name === "rules"  && !_rulesLoaded)  loadRulesTab();
+    if (name === "stats"  && !_statsLoaded)  loadStatsTab();
+  }
+
+  // ── Aba Consumo IA ──
+  function loadStatsTab(force) {
+    _statsLoaded = true;
+    document.getElementById("stats-panel").innerHTML = '<div class="log-empty"><span class="spinner"></span>Carregando...</div>';
+    google.script.run
+      .withSuccessHandler(renderStats)
+      .withFailureHandler(function(e) {
+        document.getElementById("stats-panel").innerHTML = '<span style="color:#f87171">' + e.message + '</span>';
+      })
+      .getAIStats();
+  }
+
+  function renderStats(s) {
+    var providers  = ["CLAUDE","GROQ","GEMINI","OPENAI"];
+    var sinceLabel = s.lastReset
+      ? new Date(s.lastReset).toLocaleString("pt-BR")
+      : "sempre";
+
+    var rows = providers.map(function(p) {
+      var pd        = s[p] || { requests: 0, failures: 0, lastUsed: null };
+      var requests  = pd.requests  || 0;
+      var failures  = pd.failures  || 0;
+      var lastUsed  = pd.lastUsed  ? new Date(pd.lastUsed).toLocaleString("pt-BR") : "—";
+      var dim       = (requests === 0 && failures === 0) ? "color:#cbd5e1" : "";
+      return '<tr style="border-top:1px solid #f1f5f9;' + dim + '">' +
+        '<td style="padding:9px 14px;font-weight:700;font-size:12px">' + p + '</td>' +
+        '<td style="padding:9px 14px;text-align:center;font-size:13px;color:#059669;font-weight:600">' + requests + '</td>' +
+        '<td style="padding:9px 14px;text-align:center;font-size:13px;' + (failures > 0 ? "color:#dc2626;font-weight:600" : "") + '">' + failures + '</td>' +
+        '<td style="padding:9px 14px;font-size:12px;color:#64748b">' + lastUsed + '</td>' +
+      '</tr>';
+    }).join("");
+
+    document.getElementById("stats-panel").innerHTML =
+      '<p style="font-size:12px;color:#64748b;margin-bottom:12px">Acumulado desde: <strong style="color:#334155">' + sinceLabel + '</strong></p>' +
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">' +
+        '<thead><tr style="background:#f8fafc">' +
+          '<th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase">Provedor</th>' +
+          '<th style="padding:8px 14px;text-align:center;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase">Chamadas</th>' +
+          '<th style="padding:8px 14px;text-align:center;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase">Falhas</th>' +
+          '<th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase">Última chamada</th>' +
+        '</tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+      '</table>' +
+      '<p style="font-size:13px;color:#334155;margin-top:16px;padding:12px;background:#f8fafc;border-radius:8px">' +
+        'E-mails classificados pela IA: <strong style="font-size:16px;color:#4f46e5">' + (s.totalEmailsProcessed || 0) + '</strong>' +
+      '</p>';
+  }
+
+  function confirmarResetStats() {
+    if (!confirm("Zerar todos os contadores de consumo?")) return;
+    showStatusMsg("stats-status", '<span class="spinner"></span>Zerando...');
+    google.script.run
+      .withSuccessHandler(function() { loadStatsTab(true); showStatusMsg("stats-status", "✅ Contadores zerados."); })
+      .withFailureHandler(function(e) { showStatusMsg("stats-status", "❌ " + e.message); })
+      .resetAIStats();
   }
 
   // ── Aba Configurações ──
@@ -273,6 +430,8 @@
         var sm = document.getElementById("cfg-sleep-ms");
         if (mt && g.maxThreads) mt.value = g.maxThreads;
         if (sm && g.sleepMs)    sm.value = g.sleepMs;
+        var cf = document.getElementById("cfg-category");
+        if (cf && g.categoryFilter !== undefined) cf.value = g.categoryFilter;
       })
       .withFailureHandler(function() {})
       .getGlobalConfig();
@@ -280,8 +439,9 @@
 
   function salvarConfig() {
     var globalCfg = {
-      maxThreads: parseInt(document.getElementById("cfg-max-threads").value) || 15,
-      sleepMs:    parseInt(document.getElementById("cfg-sleep-ms").value)    || 1200
+      maxThreads:     parseInt(document.getElementById("cfg-max-threads").value) || 15,
+      sleepMs:        parseInt(document.getElementById("cfg-sleep-ms").value)    || 1200,
+      categoryFilter: document.getElementById("cfg-category").value
     };
     document.getElementById("config-status").innerHTML = '<span class="spinner"></span>Salvando...';
     google.script.run
@@ -315,6 +475,25 @@
       .getDynamicRules();
   }
 
+  function describeRuleConditions(r) {
+    if (r.conditionGroups && r.conditionGroups.length) {
+      var groupSep = " " + (r.groupLogic === "AND" ? "E" : "OU") + " ";
+      var parts = r.conditionGroups.map(function(g) {
+        var sep   = " " + (g.logic === "AND" ? "E" : "OU") + " ";
+        var conds = (g.conditions || []).map(function(c) {
+          return (COND_LABELS[c.type] || c.type) + ': "' + esc(c.value) + '"';
+        }).join(sep);
+        return r.conditionGroups.length > 1 ? "(" + conds + ")" : conds;
+      });
+      return parts.join(groupSep) || "(sem condições)";
+    }
+    // Formato legado
+    var sep = " " + (r.logic === "AND" ? "E" : "OU") + " ";
+    return (r.conditions || []).map(function(c) {
+      return (COND_LABELS[c.type] || c.type) + ': "' + esc(c.value) + '"';
+    }).join(sep) || "(sem condições)";
+  }
+
   function renderRulesCrudList() {
     var el = document.getElementById("rules-crud-list");
     if (!_dynamicRules.length) {
@@ -322,14 +501,9 @@
       return;
     }
     el.innerHTML = _dynamicRules.map(function(r, i) {
-      var enabled  = r.enabled !== false;
-      var sep      = r.logic === "AND" ? " E " : " OU ";
-      var condDesc = (r.conditions || []).map(function(c) {
-        return (COND_LABELS[c.type] || c.type) + ': "' + esc(c.value) + '"';
-      }).join(sep);
-      var lblDesc  = (r.action && r.action.labels && r.action.labels.length)
+      var enabled = r.enabled !== false;
+      var lblDesc = (r.action && r.action.labels && r.action.labels.length)
         ? "Labels: " + esc(r.action.labels.join(", ")) : "";
-
       return '<div class="rule-list-item' + (enabled ? "" : " disabled") + '">' +
         '<div class="rule-list-header">' +
           '<span class="rule-list-name">' + esc(r.name) + '</span>' +
@@ -338,27 +512,30 @@
               '<input type="checkbox" ' + (enabled ? "checked" : "") + ' onchange="toggleRegraDinamica(' + i + ',this.checked)" style="accent-color:#4f46e5;cursor:pointer">' +
               (enabled ? "Ativa" : "Inativa") +
             '</label>' +
-            '<button class="btn-ghost" onclick="editarRegraDinamica(' + i + ')" style="padding:5px 10px;font-size:12px">✏️ Editar</button>' +
-            '<button class="btn-danger" onclick="deletarRegraDinamica(' + i + ')" style="padding:5px 10px;font-size:12px;border-radius:8px;cursor:pointer">🗑️</button>' +
+            '<button class="btn-ghost btn-sm" onclick="editarRegraDinamica(' + i + ')">✏️ Editar</button>' +
+            '<button class="btn-danger btn-sm" onclick="deletarRegraDinamica(' + i + ')">🗑️</button>' +
           '</div>' +
         '</div>' +
-        '<div class="rule-list-desc">' + (condDesc || "(sem condições)") + '</div>' +
-        (lblDesc ? '<div class="rule-list-desc" style="color:#4f46e5;margin-top:3px">' + lblDesc + '</div>' : '') +
+        '<div class="rule-list-desc">' + describeRuleConditions(r) + '</div>' +
+        (lblDesc ? '<div class="rule-list-desc" style="color:#4f46e5;margin-top:2px">' + lblDesc + '</div>' : '') +
       '</div>';
     }).join("");
   }
 
+  // ── Formulário de regra ──
+
   function novaRegra() {
     document.getElementById("form-view-title").textContent = "Nova Regra";
-    document.getElementById("rule-edit-id").value      = "";
-    document.getElementById("rule-edit-name").value    = "";
-    document.getElementById("rule-edit-enabled").checked = true;
-    document.getElementById("rule-edit-logic").value   = "OR";
-    document.getElementById("conditions-container").innerHTML = "";
-    document.getElementById("rule-edit-forward").value = "";
-    document.getElementById("rule-edit-archive").checked = false;
+    document.getElementById("rule-edit-id").value         = "";
+    document.getElementById("rule-edit-name").value       = "";
+    document.getElementById("rule-edit-enabled").checked  = true;
+    document.getElementById("rule-edit-group-logic").value = "OR";
+    document.getElementById("rule-edit-forward").value    = "";
+    document.getElementById("rule-edit-archive").checked  = false;
+    _condGroupsData = [{ logic: "OR", conditions: [] }];
+    _groupLogic     = "OR";
+    renderConditionGroupsUI();
     renderFormLabels([]);
-    addConditionRow();
     mostrarFormView();
   }
 
@@ -368,12 +545,22 @@
     document.getElementById("rule-edit-id").value         = r.id || "";
     document.getElementById("rule-edit-name").value       = r.name || "";
     document.getElementById("rule-edit-enabled").checked  = r.enabled !== false;
-    document.getElementById("rule-edit-logic").value      = r.logic || "OR";
-    document.getElementById("conditions-container").innerHTML = "";
-    (r.conditions || []).forEach(function(c) { addConditionRow(c.type, c.value); });
-    if (!r.conditions || !r.conditions.length) addConditionRow();
     document.getElementById("rule-edit-forward").value    = (r.action && r.action.encaminhar) || "";
     document.getElementById("rule-edit-archive").checked  = !!(r.action && r.action.arquivar);
+
+    // Suporta formato legado (conditions + logic) e v1.6 (conditionGroups + groupLogic)
+    if (r.conditionGroups && r.conditionGroups.length) {
+      _condGroupsData = r.conditionGroups.map(function(g) {
+        return { logic: g.logic || "OR", conditions: (g.conditions || []).map(function(c) { return { type: c.type, value: c.value }; }) };
+      });
+      _groupLogic = r.groupLogic || "OR";
+    } else {
+      _condGroupsData = [{ logic: r.logic || "OR", conditions: (r.conditions || []).map(function(c) { return { type: c.type, value: c.value }; }) }];
+      _groupLogic = "OR";
+    }
+
+    document.getElementById("rule-edit-group-logic").value = _groupLogic;
+    renderConditionGroupsUI();
     renderFormLabels((r.action && r.action.labels) || []);
     mostrarFormView();
   }
@@ -390,7 +577,104 @@
     document.getElementById("rules-form-view").style.display = "none";
   }
 
-  function addConditionRow(type, value) {
+  // ── Grupos de condições ──
+
+  function collectCurrentGroupsData() {
+    var data = [];
+    document.querySelectorAll(".condition-group[data-gidx]").forEach(function(groupEl) {
+      var logic      = groupEl.querySelector(".group-logic").value;
+      var conditions = [];
+      groupEl.querySelectorAll(".cond-row").forEach(function(row) {
+        conditions.push({
+          type:  row.querySelector(".cond-type").value,
+          value: row.querySelector(".cond-value").value
+        });
+      });
+      data.push({ logic: logic, conditions: conditions });
+    });
+    return data;
+  }
+
+  function renderConditionGroupsUI() {
+    var container  = document.getElementById("condition-groups-container");
+    var groupLogic = document.getElementById("rule-edit-group-logic").value || _groupLogic || "OR";
+    container.innerHTML = "";
+
+    _condGroupsData.forEach(function(group, gi) {
+      // Separator between groups
+      if (gi > 0) {
+        var sep = document.createElement("div");
+        sep.className = "group-separator";
+        sep.innerHTML =
+          '<div class="group-separator-line"></div>' +
+          '<span class="group-sep-badge">' + (groupLogic === "AND" ? "E" : "OU") + '</span>' +
+          '<div class="group-separator-line"></div>';
+        container.appendChild(sep);
+      }
+
+      var groupEl = document.createElement("div");
+      groupEl.className = "condition-group";
+      groupEl.setAttribute("data-gidx", gi);
+
+      var canRemove = _condGroupsData.length > 1;
+      groupEl.innerHTML =
+        '<div class="group-header">' +
+          '<div style="display:flex;align-items:center;gap:8px">' +
+            '<span class="group-title">Grupo ' + (gi + 1) + '</span>' +
+            '<select class="group-logic logic-select">' +
+              '<option value="OR">Qualquer uma (OU)</option>' +
+              '<option value="AND">Todas (E)</option>' +
+            '</select>' +
+          '</div>' +
+          (canRemove
+            ? '<button class="btn-danger btn-sm" onclick="removeConditionGroup(' + gi + ')">Remover grupo</button>'
+            : '<span style="font-size:11px;color:#cbd5e1">ao menos 1 grupo</span>') +
+        '</div>' +
+        '<div class="group-conditions"></div>' +
+        '<button class="btn-ghost btn-sm" style="margin-top:8px" onclick="addConditionToGroup(' + gi + ')">+ Condição</button>';
+
+      container.appendChild(groupEl);
+      groupEl.querySelector(".group-logic").value = group.logic || "OR";
+
+      var condContainer = groupEl.querySelector(".group-conditions");
+      (group.conditions || []).forEach(function(c) {
+        appendConditionRow(condContainer, c.type, c.value);
+      });
+      if (!group.conditions || !group.conditions.length) {
+        appendConditionRow(condContainer);
+      }
+    });
+  }
+
+  function updateSeparatorLabels() {
+    var label = document.getElementById("rule-edit-group-logic").value === "AND" ? "E" : "OU";
+    document.querySelectorAll(".group-sep-badge").forEach(function(el) { el.textContent = label; });
+  }
+
+  function addConditionGroup() {
+    _condGroupsData = collectCurrentGroupsData();
+    _groupLogic     = document.getElementById("rule-edit-group-logic").value;
+    _condGroupsData.push({ logic: "OR", conditions: [] });
+    renderConditionGroupsUI();
+    // Scroll new group into view
+    var groups = document.querySelectorAll(".condition-group[data-gidx]");
+    if (groups.length) groups[groups.length - 1].scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function removeConditionGroup(gi) {
+    _condGroupsData = collectCurrentGroupsData();
+    _groupLogic     = document.getElementById("rule-edit-group-logic").value;
+    if (_condGroupsData.length <= 1) return;
+    _condGroupsData.splice(gi, 1);
+    renderConditionGroupsUI();
+  }
+
+  function addConditionToGroup(gi) {
+    var groupEl = document.querySelector('.condition-group[data-gidx="' + gi + '"]');
+    if (groupEl) appendConditionRow(groupEl.querySelector(".group-conditions"));
+  }
+
+  function appendConditionRow(container, type, value) {
     var div = document.createElement("div");
     div.className = "cond-row";
     div.innerHTML =
@@ -402,10 +686,12 @@
       '</select>' +
       '<input type="text" class="cond-value" placeholder="Ex: daycovalseguros.com.br">' +
       '<button class="cond-remove" onclick="this.parentElement.remove()" title="Remover">✕</button>';
-    document.getElementById("conditions-container").appendChild(div);
-    if (type)  div.querySelector(".cond-type").value  = type;
+    container.appendChild(div);
+    if (type)              div.querySelector(".cond-type").value  = type;
     if (value !== undefined) div.querySelector(".cond-value").value = value;
   }
+
+  // ── Labels no formulário ──
 
   function renderFormLabels(selected) {
     var sel = {};
@@ -427,6 +713,8 @@
     });
   }
 
+  // ── Salvar / toggle / deletar ──
+
   function salvarRegraDinamica() {
     var name = document.getElementById("rule-edit-name").value.trim();
     if (!name) {
@@ -434,23 +722,28 @@
       return;
     }
 
-    var conditions = [];
-    document.querySelectorAll("#conditions-container .cond-row").forEach(function(row) {
-      var type  = row.querySelector(".cond-type").value;
-      var value = row.querySelector(".cond-value").value.trim();
-      if (value) conditions.push({ type: type, value: value });
-    });
+    var conditionGroups = collectCurrentGroupsData().map(function(g) {
+      return {
+        logic:      g.logic,
+        conditions: g.conditions.filter(function(c) { return c.value.trim(); })
+      };
+    }).filter(function(g) { return g.conditions.length > 0; });
+
+    if (!conditionGroups.length) {
+      document.getElementById("rules-form-status").innerHTML = '❌ Adicione ao menos uma condição com valor.';
+      return;
+    }
 
     var labels = [];
     document.querySelectorAll(".form-lbl-cb:checked").forEach(function(cb) { labels.push(cb.value); });
 
     var existingId = document.getElementById("rule-edit-id").value;
     var rule = {
-      id:         existingId || ("rule_" + Date.now()),
-      name:       name,
-      enabled:    document.getElementById("rule-edit-enabled").checked,
-      conditions: conditions,
-      logic:      document.getElementById("rule-edit-logic").value,
+      id:              existingId || ("rule_" + Date.now()),
+      name:            name,
+      enabled:         document.getElementById("rule-edit-enabled").checked,
+      conditionGroups: conditionGroups,
+      groupLogic:      document.getElementById("rule-edit-group-logic").value,
       action: {
         labels:     labels,
         encaminhar: document.getElementById("rule-edit-forward").value.trim(),
@@ -463,7 +756,6 @@
     if (idx >= 0) { _dynamicRules[idx] = rule; } else { _dynamicRules.push(rule); }
 
     document.getElementById("rules-form-status").innerHTML = '<span class="spinner"></span>Salvando...';
-
     google.script.run
       .withSuccessHandler(function() {
         renderRulesCrudList();
@@ -586,6 +878,10 @@
   function esc(s) {
     return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
   }
+
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") document.getElementById("help-modal").classList.remove("open");
+  });
 </script>
 </body>
 </html>

@@ -25,11 +25,10 @@ function organizarEmails(regrasSelecionadas) {
 
   var maxThreads = globalConfig.maxThreads || CONFIG.MAX_THREADS;
   var sleepMs    = globalConfig.sleepMs    || CONFIG.SLEEP_MS;
-
   var availableLabels = [];
   try { availableLabels = GmailApp.getUserLabels().map(function(l) { return l.getName(); }); } catch(e) {}
 
-  var threads = buscarThreads(maxThreads);
+  var threads = buscarThreads(maxThreads, globalConfig.categoryFilter);
   if (!threads.length) {
     return { logs: ["📭 Nenhum e-mail não lido no inbox."], total: 0 };
   }
@@ -61,7 +60,7 @@ function organizarEmails(regrasSelecionadas) {
         if (rule._dynamic) {
           var matchMsg = null;
           for (var m = 0; m < messages.length; m++) {
-            if (avaliarCondicaoDinamica(messages[m], rule.conditions, rule.logic)) {
+            if (avaliarCondicaoDinamica(messages[m], rule)) {
               matchMsg = messages[m]; break;
             }
           }
@@ -134,14 +133,31 @@ function saveDynamicRules(rules) {
 
 function getGlobalConfig() {
   var stored   = PropertiesService.getScriptProperties().getProperty("GLOBAL_CONFIG");
-  var defaults = { maxThreads: CONFIG.MAX_THREADS, sleepMs: CONFIG.SLEEP_MS };
+  var defaults = { maxThreads: CONFIG.MAX_THREADS, sleepMs: CONFIG.SLEEP_MS, categoryFilter: "" };
   if (!stored) return defaults;
   var parsed = JSON.parse(stored);
-  return { maxThreads: parsed.maxThreads || defaults.maxThreads, sleepMs: parsed.sleepMs || defaults.sleepMs };
+  return {
+    maxThreads:     parsed.maxThreads     || defaults.maxThreads,
+    sleepMs:        parsed.sleepMs        || defaults.sleepMs,
+    categoryFilter: parsed.categoryFilter !== undefined ? parsed.categoryFilter : ""
+  };
 }
 
 function salvarGlobalConfig(config) {
   PropertiesService.getScriptProperties().setProperty("GLOBAL_CONFIG", JSON.stringify(config));
+  return true;
+}
+
+function getAIStats() {
+  var stored = PropertiesService.getScriptProperties().getProperty("AI_STATS");
+  return stored ? JSON.parse(stored) : { totalEmailsProcessed: 0, lastReset: null };
+}
+
+function resetAIStats() {
+  PropertiesService.getScriptProperties().setProperty("AI_STATS", JSON.stringify({
+    totalEmailsProcessed: 0,
+    lastReset: new Date().toISOString()
+  }));
   return true;
 }
 

@@ -11,34 +11,52 @@ const RULES = [
 
 // ---------------------------------------------------------------------------
 // Avaliação de condições dinâmicas
+// Suporta formato v1.5 (conditions + logic) e v1.6 (conditionGroups + groupLogic)
 // ---------------------------------------------------------------------------
 
-function avaliarCondicaoDinamica(message, conditions, logic) {
-  var from    = message.getFrom().toLowerCase();
-  var subject = message.getSubject().toLowerCase();
+function avaliarCondicaoDinamica(message, rule) {
+  var grupos, grupoLogic;
 
-  var resultados = (conditions || []).map(function(cond) {
-    var val = (cond.value || "").toLowerCase().trim();
-    if (!val) return false;
-    switch (cond.type) {
-      case "sender_domain":
-        return from.indexOf("@" + val) !== -1;
-      case "sender_email":
-        return from.indexOf(val) !== -1;
-      case "sender_contains":
-        return from.indexOf(val) !== -1;
-      case "subject":
-        var escaped = val.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
-        return new RegExp("^" + escaped + "$").test(subject);
-      default:
-        return false;
-    }
+  if (rule.conditionGroups && rule.conditionGroups.length) {
+    // Formato v1.6: grupos com lógica própria
+    grupos     = rule.conditionGroups;
+    grupoLogic = rule.groupLogic || "OR";
+  } else {
+    // Formato v1.5 legado: lista plana
+    grupos     = [{ logic: rule.logic || "OR", conditions: rule.conditions || [] }];
+    grupoLogic = "OR";
+  }
+
+  var grupoResults = grupos.map(function(grupo) {
+    var condResults = (grupo.conditions || []).map(function(cond) {
+      return _avaliarCondicao(message, cond);
+    });
+    if (!condResults.length) return false;
+    return (grupo.logic === "AND")
+      ? condResults.every(function(r) { return r; })
+      : condResults.some(function(r) { return r; });
   });
 
-  if (!resultados.length) return false;
-  return (logic === "AND")
-    ? resultados.every(function(r) { return r; })
-    : resultados.some(function(r) { return r; });
+  if (!grupoResults.length) return false;
+  return (grupoLogic === "AND")
+    ? grupoResults.every(function(r) { return r; })
+    : grupoResults.some(function(r) { return r; });
+}
+
+function _avaliarCondicao(message, cond) {
+  var from    = message.getFrom().toLowerCase();
+  var subject = message.getSubject().toLowerCase();
+  var val     = (cond.value || "").toLowerCase().trim();
+  if (!val) return false;
+  switch (cond.type) {
+    case "sender_domain":   return from.indexOf("@" + val) !== -1;
+    case "sender_email":    return from.indexOf(val) !== -1;
+    case "sender_contains": return from.indexOf(val) !== -1;
+    case "subject":
+      var escaped = val.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
+      return new RegExp("^" + escaped + "$").test(subject);
+    default: return false;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -65,15 +83,35 @@ function chamarIAComFallback(subject, body, availableLabels) {
       const result = _chamarProvider(provider, key, prompt);
       if (result && result.categoria) {
         Logger_.ai(provider, `categoria=${result.categoria} | prioridade=${result.prioridade || "?"}`);
+        _trackAI(provider, true);
         return result;
       }
+      _trackAI(provider, false);
     } catch (e) {
       Logger_.warn(`Provider ${provider} falhou: ${e.message}`);
+      _trackAI(provider, false);
     }
   }
 
   Logger_.error("Todos os provedores de IA falharam para: " + subject);
   return null;
+}
+
+function _trackAI(provider, success) {
+  try {
+    var props  = PropertiesService.getScriptProperties();
+    var stored = props.getProperty("AI_STATS");
+    var stats  = stored ? JSON.parse(stored) : {};
+    if (!stats[provider]) stats[provider] = { requests: 0, failures: 0, lastUsed: null };
+    if (success) {
+      stats[provider].requests++;
+      stats[provider].lastUsed = new Date().toISOString();
+      stats.totalEmailsProcessed = (stats.totalEmailsProcessed || 0) + 1;
+    } else {
+      stats[provider].failures = (stats[provider].failures || 0) + 1;
+    }
+    props.setProperty("AI_STATS", JSON.stringify(stats));
+  } catch(e) {}
 }
 
 // ---------------------------------------------------------------------------

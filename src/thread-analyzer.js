@@ -2,7 +2,10 @@
 // Lê inbox sem modificar nada.
 
 function diagnosticar() {
-  var threads  = GmailApp.search(CONFIG.QUERY, 0, CONFIG.MAX_THREADS);
+  var globalConfig = {};
+  try { globalConfig = getGlobalConfig(); } catch(e) {}
+
+  var threads = buscarThreads(globalConfig.maxThreads || CONFIG.MAX_THREADS, globalConfig.categoryFilter);
   var dynRules = [];
   try { dynRules = getDynamicRules().filter(function(r) { return r.enabled !== false; }); } catch(e) {}
 
@@ -19,7 +22,7 @@ function diagnosticar() {
         for (var i = 0; i < dynRules.length && !found; i++) {
           var rule = dynRules[i];
           for (var m = 0; m < messages.length && !found; m++) {
-            if (avaliarCondicaoDinamica(messages[m], rule.conditions, rule.logic)) {
+            if (avaliarCondicaoDinamica(messages[m], rule)) {
               regraMatch = rule.name;
               matchFrom  = messages[m].getFrom();
               matchSubj  = messages[m].getSubject();
