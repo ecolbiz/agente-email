@@ -27,14 +27,28 @@ function diagnosticar() {
     timestamp: new Date().toLocaleString("pt-BR"),
     threads: threads.map(function(thread) {
       try {
-        var message    = thread.getMessages()[0];
+        var messages   = thread.getMessages();
         var regraMatch = "nenhuma";
+        var matchFrom  = messages[0].getFrom();
+        var matchSubj  = messages[0].getSubject();
+
         for (var i = 0; i < RULES.length; i++) {
-          if (RULES[i].condition(thread, message)) { regraMatch = RULES[i].name; break; }
+          var rule = RULES[i];
+          if (rule.action === null) { regraMatch = rule.name; break; } // catch-all
+          for (var m = 0; m < messages.length; m++) {
+            if (rule.condition(thread, messages[m])) {
+              regraMatch = rule.name;
+              matchFrom  = messages[m].getFrom();
+              matchSubj  = messages[m].getSubject();
+              break;
+            }
+          }
+          if (regraMatch !== "nenhuma") break;
         }
+
         return {
-          from:    message.getFrom(),
-          subject: message.getSubject(),
+          from:    matchFrom,
+          subject: matchSubj,
           labels:  thread.getLabels().map(function(l) { return l.getName(); }),
           regra:   regraMatch
         };

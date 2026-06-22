@@ -1,19 +1,18 @@
 // ==================== CONSTRUTOR DE PROMPTS ====================
 
-function buildCategorizationPrompt(subject, body) {
-  return `Você é um assistente de organização de e-mails.
+function buildCategorizationPrompt(subject, body, availableLabels) {
+  var labelInstrucao = (availableLabels && availableLabels.length)
+    ? "Escolha EXATAMENTE uma destas labels (copie o nome sem alterações): " + availableLabels.join(" | ")
+    : 'Sugira uma categoria curta (ex: "Marketing", "Suporte", "Pessoal", "Financeiro")';
 
-Analise o e-mail abaixo e retorne SOMENTE um JSON válido com os campos:
-- "categoria": string com o nome da label sugerida (ex: "Financeiro", "Suporte", "Marketing", "Pessoal", "Urgente", "Informativo")
-- "prioridade": "alta" | "media" | "baixa"
-- "resumo": string de até 80 caracteres descrevendo o e-mail
-
-Assunto: ${subject}
-
-Corpo:
-${body}
-
-Responda apenas com JSON, sem explicações.`;
+  return "Você é um assistente de organização de e-mails.\n\n" +
+    "Analise o e-mail abaixo e retorne SOMENTE um JSON válido com:\n" +
+    '- "categoria": ' + labelInstrucao + "\n" +
+    '- "prioridade": "alta" | "media" | "baixa"\n' +
+    '- "resumo": string de até 80 caracteres\n\n' +
+    "Assunto: " + subject + "\n\n" +
+    "Corpo:\n" + body + "\n\n" +
+    "Responda apenas com JSON, sem explicações.";
 }
 
 function buildSummaryHtml(logs, dataExecucao) {

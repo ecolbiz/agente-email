@@ -1,13 +1,13 @@
 // ==================== CONFIGURAÇÃO GLOBAL ====================
 
-const VERSION = "v1.0";
+const VERSION = "v1.4";
 
 const CONFIG = {
   MAX_THREADS: 15,
-  BODY_LIMIT:  4500,
+  BODY_LIMIT:  1500,
   SLEEP_MS:    1200,
   QUERY:       "in:inbox is:unread",
-  PROVIDERS_ORDER: ["GEMINI", "GROQ", "CLAUDE", "OPENAI"]
+  PROVIDERS_ORDER: ["CLAUDE", "GROQ", "GEMINI", "OPENAI"]
 };
 
 // Labels existentes no Gmail — NÃO são criadas automaticamente.

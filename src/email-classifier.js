@@ -32,15 +32,20 @@ const RULES = [
              subject.includes("aviso de espaco em disco virtual");
     },
     action: processarAvisoDiscoVirtual
+  },
+  {
+    name: "Geral (IA)",
+    condition: function(thread, message) { return true; }, // catch-all — só ativa se o usuário marcar
+    action: null  // null = sinal para o loop principal usar classificação por IA
   }
-  // Adicione novas regras aqui
+  // Adicione novas regras acima de "Geral (IA)"
 ];
 
 // ---------------------------------------------------------------------------
 // Classificação via IA com fallback entre provedores
 // ---------------------------------------------------------------------------
 
-function chamarIAComFallback(subject, body) {
+function chamarIAComFallback(subject, body, availableLabels) {
   var API_KEYS = {};
   try { API_KEYS = getApiKeys(); } catch(e) { /* PropertiesService indisponível */ }
 
@@ -50,7 +55,7 @@ function chamarIAComFallback(subject, body) {
     return null;
   }
 
-  const prompt = buildCategorizationPrompt(subject, body);
+  const prompt = buildCategorizationPrompt(subject, body, availableLabels);
 
   for (const provider of CONFIG.PROVIDERS_ORDER) {
     const key = API_KEYS[provider];
@@ -141,7 +146,7 @@ function _chamarOpenAICompativel(url, key, prompt, model) {
 // ---------------------------------------------------------------------------
 
 function fazerRequisicao(url, payload, provider, extraHeaders) {
-  const options = {
+  var options = {
     method:             "post",
     contentType:        "application/json",
     payload:            JSON.stringify(payload),
@@ -149,23 +154,35 @@ function fazerRequisicao(url, payload, provider, extraHeaders) {
     muteHttpExceptions: true
   };
 
-  const res  = UrlFetchApp.fetch(url, options);
-  const code = res.getResponseCode();
-  const body = res.getContentText();
+  for (var attempt = 0; attempt < 2; attempt++) {
+    var res  = UrlFetchApp.fetch(url, options);
+    var code = res.getResponseCode();
+    var body = res.getContentText();
 
-  // Sempre loga no Stackdriver para debug (visível em Execuções > Logs)
-  console.log("[" + provider + "] HTTP " + code + " → " + body.substring(0, 600));
+    console.log("[" + provider + "] HTTP " + code + " → " + body.substring(0, 500));
 
-  if (code !== 200) {
-    // Logger_.error aparece no dashboard e no e-mail de resumo
-    Logger_.error("[" + provider + "] HTTP " + code + " → " + body.substring(0, 400));
+    if (code === 200) {
+      try { return JSON.parse(body); }
+      catch (e) { Logger_.error("[" + provider + "] JSON inválido: " + body.substring(0, 200)); return null; }
+    }
+
+    if (code === 429 && attempt === 0) {
+      var waitMs = _parseRetryAfterMs(body) || 10000;
+      Logger_.warn("[" + provider + "] rate limit — aguardando " + (waitMs / 1000).toFixed(1) + "s");
+      Utilities.sleep(waitMs);
+      continue;
+    }
+
+    Logger_.error("[" + provider + "] HTTP " + code + " → " + body.substring(0, 350));
     return null;
   }
 
-  try {
-    return JSON.parse(body);
-  } catch (e) {
-    Logger_.error("[" + provider + "] JSON inválido: " + body.substring(0, 200));
-    return null;
-  }
+  return null;
+}
+
+// Lê o tempo sugerido em respostas 429 do Groq: "Please try again in 8.26s"
+function _parseRetryAfterMs(body) {
+  var match = body.match(/try again in (\d+\.?\d*)\s*s/i);
+  if (match) return Math.ceil(parseFloat(match[1]) * 1000) + 1000;
+  return 0;
 }

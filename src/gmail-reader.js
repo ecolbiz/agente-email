@@ -28,6 +28,7 @@ function aplicarLabel(thread, labelName) {
 
 function marcarProcessado(thread) {
   aplicarLabel(thread, LABELS.PROCESSADOS);
+  thread.markRead();
 }
 
 function arquivarThread(thread) {
