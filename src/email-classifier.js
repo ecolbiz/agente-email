@@ -87,7 +87,7 @@ function _chamarProvider(provider, key, prompt) {
       return _chamarGemini(key, prompt);
     case "GROQ":
       return _chamarOpenAICompativel(
-        "https://api.groq.com/openai/v1/chat/completions", key, prompt, "llama3-8b-8192"
+        "https://api.groq.com/openai/v1/chat/completions", key, prompt, "llama-3.1-8b-instant"
       );
     case "CLAUDE":
       return _chamarClaude(key, prompt);

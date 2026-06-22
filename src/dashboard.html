@@ -71,6 +71,13 @@
     .archive-toggle{display:flex;align-items:center;gap:8px;padding:10px 0 0}
     .archive-toggle input{width:16px;height:16px;accent-color:#4f46e5;cursor:pointer}
     .archive-toggle label{font-size:13px;color:#374151;cursor:pointer}
+    .global-config-box{border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:18px;background:#fafafa}
+    .global-config-box .rule-config-title{margin-bottom:12px}
+    .global-row{display:flex;gap:20px;flex-wrap:wrap}
+    .global-field{display:flex;flex-direction:column;gap:4px;min-width:160px}
+    .global-field label{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase}
+    .global-field input{padding:7px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;width:100%}
+    .global-field input:focus{outline:none;border-color:#4f46e5}
     #config-status{font-size:13px;margin-top:12px;min-height:20px}
 
     .spinner{display:inline-block;width:13px;height:13px;border:2px solid #6b7280;border-top-color:#4f46e5;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
@@ -104,7 +111,25 @@
 
   <!-- ===== ABA CONFIGURAÇÕES ===== -->
   <div id="tab-config" style="display:none">
+
+    <!-- Config global -->
+    <div class="global-config-box">
+      <div class="rule-config-title">⚙️ Geral</div>
+      <div class="global-row">
+        <div class="global-field">
+          <label>Máx. e-mails por rodada</label>
+          <input type="number" id="cfg-max-threads" min="1" max="50" value="15">
+        </div>
+        <div class="global-field">
+          <label>Intervalo entre e-mails (ms)</label>
+          <input type="number" id="cfg-sleep-ms" min="200" max="5000" step="100" value="1200">
+        </div>
+      </div>
+    </div>
+
+    <!-- Config por regra -->
     <div id="config-panel"><div class="log-empty"><span class="spinner"></span>Carregando labels e configurações...</div></div>
+
     <div class="btn-row" id="config-btns" style="display:none">
       <button class="btn-save" onclick="salvarConfig()">💾 Salvar configurações</button>
     </div>
@@ -145,8 +170,8 @@
 
   // ── Carregar aba de configurações ──
   function loadConfigTab() {
-    var labelsOk = false, configOk = false;
-    function tryRender() { if (labelsOk && configOk) renderConfigPanel(); }
+    var labelsOk = false, configOk = false, globalOk = false;
+    function tryRender() { if (labelsOk && configOk && globalOk) renderConfigPanel(); }
 
     google.script.run
       .withSuccessHandler(function(l) { _labels = l || []; labelsOk = true; tryRender(); })
@@ -157,6 +182,20 @@
       .withSuccessHandler(function(c) { _config = c || {}; configOk = true; tryRender(); })
       .withFailureHandler(function(e) { document.getElementById("config-panel").innerHTML = '<span style="color:#f87171">' + e.message + '</span>'; })
       .getConfigRegras();
+
+    google.script.run
+      .withSuccessHandler(function(g) {
+        if (g) {
+          var mt = document.getElementById("cfg-max-threads");
+          var sm = document.getElementById("cfg-sleep-ms");
+          if (mt && g.maxThreads) mt.value = g.maxThreads;
+          if (sm && g.sleepMs)    sm.value = g.sleepMs;
+        }
+        globalOk = true;
+        tryRender();
+      })
+      .withFailureHandler(function() { globalOk = true; tryRender(); })
+      .getGlobalConfig();
   }
 
   function renderConfigPanel() {
@@ -226,16 +265,25 @@
       };
     });
 
+    var globalCfg = {
+      maxThreads: parseInt(document.getElementById("cfg-max-threads").value) || 15,
+      sleepMs:    parseInt(document.getElementById("cfg-sleep-ms").value)    || 1200
+    };
+
     document.getElementById("config-status").innerHTML = '<span class="spinner"></span>Salvando...';
-    google.script.run
-      .withSuccessHandler(function() {
+
+    var savedCount = 0;
+    function onSaved() {
+      savedCount++;
+      if (savedCount === 2) {
         _config = config;
-        document.getElementById("config-status").innerHTML = '✅ Configurações salvas em ' + new Date().toLocaleTimeString("pt-BR");
-      })
-      .withFailureHandler(function(e) {
-        document.getElementById("config-status").innerHTML = '❌ ' + e.message;
-      })
-      .salvarConfigRegras(config);
+        document.getElementById("config-status").innerHTML = '✅ Salvo em ' + new Date().toLocaleTimeString("pt-BR");
+      }
+    }
+    function onSaveErr(e) { document.getElementById("config-status").innerHTML = '❌ ' + e.message; }
+
+    google.script.run.withSuccessHandler(onSaved).withFailureHandler(onSaveErr).salvarConfigRegras(config);
+    google.script.run.withSuccessHandler(onSaved).withFailureHandler(onSaveErr).salvarGlobalConfig(globalCfg);
   }
 
   // ── Execução ──

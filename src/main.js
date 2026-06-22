@@ -11,10 +11,15 @@ function organizarEmails(regrasSelecionadas) {
     return { logs: ["⚠️ Nenhuma regra selecionada."], total: 0 };
   }
 
-  var allConfig = {};
-  try { allConfig = getConfigRegras(); } catch(e) { /* PropertiesService indisponível */ }
+  var allConfig    = {};
+  var globalConfig = {};
+  try { allConfig    = getConfigRegras();  } catch(e) {}
+  try { globalConfig = getGlobalConfig();  } catch(e) {}
 
-  var threads = buscarThreads();
+  var maxThreads = globalConfig.maxThreads || CONFIG.MAX_THREADS;
+  var sleepMs    = globalConfig.sleepMs    || CONFIG.SLEEP_MS;
+
+  var threads = buscarThreads(maxThreads);
   if (!threads.length) {
     return { logs: ["📭 Nenhum e-mail não lido no inbox."], total: 0 };
   }
@@ -69,7 +74,7 @@ function organizarEmails(regrasSelecionadas) {
       Logger_.error("Erro: " + e.toString());
     }
 
-    Utilities.sleep(CONFIG.SLEEP_MS);
+    Utilities.sleep(sleepMs);
   }
 
   var logs = Logger_.getLogs();
@@ -98,6 +103,19 @@ function getConfigRegras() {
 
 function salvarConfigRegras(config) {
   PropertiesService.getScriptProperties().setProperty("RULES_CONFIG", JSON.stringify(config));
+  return true;
+}
+
+function getGlobalConfig() {
+  var stored = PropertiesService.getScriptProperties().getProperty("GLOBAL_CONFIG");
+  var defaults = { maxThreads: CONFIG.MAX_THREADS, sleepMs: CONFIG.SLEEP_MS };
+  if (!stored) return defaults;
+  var parsed = JSON.parse(stored);
+  return { maxThreads: parsed.maxThreads || defaults.maxThreads, sleepMs: parsed.sleepMs || defaults.sleepMs };
+}
+
+function salvarGlobalConfig(config) {
+  PropertiesService.getScriptProperties().setProperty("GLOBAL_CONFIG", JSON.stringify(config));
   return true;
 }
 
